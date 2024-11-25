@@ -8,7 +8,7 @@
             "name": "Python Debugger",
             "type": "debugpy",
             "request": "launch",
-            "program": "$F:\\Visual Studio Projects\\Code\\MusicPlayer\\main.py",
+            "program": "main.py",
             "console": "integratedTerminal"
         }
     ]
