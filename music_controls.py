@@ -1,7 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QSlider, QLabel, QSpacerItem, QSizePolicy, QVBoxLayout
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (
+    QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QSlider,
+    QLabel, QSpacerItem, QSizePolicy
+)
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt
-from resources import *  # Import des ressources (icônes)
+from resources import *
 
 class MusicControls(QWidget):
     def __init__(self):
@@ -10,15 +13,58 @@ class MusicControls(QWidget):
         self.setFixedHeight(100)  # Hauteur ajustée pour le panneau inférieur
         self.setStyleSheet("background-color: #1E1E1E;")  # Couleur de fond gris foncé
 
-        # Disposition verticale principale
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)  # Pas de marges internes
-        layout.setSpacing(0)  # Pas d'espacement vertical entre les éléments
+        # Disposition principale horizontale
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(10, 5, 10, 5)  # Marges autour du contenu
+        layout.setSpacing(15)  # Espacement entre les sections principales
 
-        # Disposition pour les boutons (Play, Prev, Next)
+        # Section gauche : Image et infos sur la musique
+        self.left_section = QHBoxLayout()
+        self.left_section.setContentsMargins(0, 0, 0, 0)
+        self.left_section.setSpacing(10)
+
+        # Image de l'album
+        self.album_image = QLabel()
+        self.album_image.setFixedSize(60, 60)  # Taille de l'image
+        self.album_image.setStyleSheet("border-radius: 5px; background-color: #333333;")  # Fond temporaire
+        self.album_image.setPixmap(QPixmap(ALBUM_PLACEHOLDER).scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.left_section.addWidget(self.album_image)
+
+        # Infos musique : Titre et auteurs
+        self.info_section = QVBoxLayout()
+        self.info_section.setContentsMargins(0, 0, 0, 0)
+        self.info_section.setAlignment(Qt.AlignVCenter)  # Centrage vertical par rapport à l'image
+
+        # Titre de la musique
+        self.song_title = QLabel("Titre de la musique")
+        self.song_title.setStyleSheet("color: white; font-size: 12px; font-weight: bold;")
+        self.info_section.addWidget(self.song_title)
+
+        # Auteurs (cliquables)
+        self.authors_layout = QHBoxLayout()
+        self.authors_layout.setContentsMargins(0, 0, 0, 0)
+        self.authors_layout.setSpacing(5)
+
+        # Exemple de plusieurs auteurs
+        authors = ["Artiste 1", "Artiste 2"]
+        for author in authors:
+            author_label = QLabel(author)
+            author_label.setStyleSheet("color: #00FF00; font-size: 10px; text-decoration: underline; cursor: pointer;")
+            self.authors_layout.addWidget(author_label)
+
+        self.info_section.addLayout(self.authors_layout)
+        self.left_section.addLayout(self.info_section)
+
+        layout.addLayout(self.left_section)
+
+        # Section centrale : Boutons de contrôle
+        self.center_section = QVBoxLayout()
+        self.center_section.setContentsMargins(0, 0, 0, 0)
+
+        # Disposition des boutons
         button_layout = QHBoxLayout()
-        button_layout.setContentsMargins(0, 10, 0, 0)  # Alignement des boutons en haut du panneau
-        button_layout.setSpacing(15)  # Espacement entre les boutons
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        button_layout.setSpacing(15)
 
         # Espacement gauche pour centrer horizontalement
         button_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
@@ -26,44 +72,44 @@ class MusicControls(QWidget):
         # Bouton précédent
         prev_button = QPushButton()
         prev_button.setIcon(QIcon(PREV_ICON))
-        prev_button.setFixedSize(28, 28)  # Taille ajustée à 28px pour les boutons
-        prev_button.setIconSize(prev_button.size())  # Redimensionner l'icône à la taille du bouton
-        prev_button.setStyleSheet(self.invisible_button_style())  # Applique le style invisible
+        prev_button.setFixedSize(28, 28)
+        prev_button.setIconSize(prev_button.size())
+        prev_button.setStyleSheet(self.invisible_button_style())
         button_layout.addWidget(prev_button)
 
         # Bouton Play/Pause
         play_pause_button = QPushButton()
         play_pause_button.setIcon(QIcon(PLAY_ICON))
-        play_pause_button.setFixedSize(36, 36)  # Taille ajustée à 36px pour Play/Pause
-        play_pause_button.setIconSize(play_pause_button.size())  # Redimensionner l'icône à la taille du bouton
-        play_pause_button.setStyleSheet(self.invisible_button_style())  # Applique le style invisible
+        play_pause_button.setFixedSize(36, 36)
+        play_pause_button.setIconSize(play_pause_button.size())
+        play_pause_button.setStyleSheet(self.invisible_button_style())
         button_layout.addWidget(play_pause_button)
 
         # Bouton suivant
         next_button = QPushButton()
         next_button.setIcon(QIcon(NEXT_ICON))
-        next_button.setFixedSize(28, 28)  # Taille ajustée à 28px pour les boutons
-        next_button.setIconSize(next_button.size())  # Redimensionner l'icône à la taille du bouton
-        next_button.setStyleSheet(self.invisible_button_style())  # Applique le style invisible
+        next_button.setFixedSize(28, 28)
+        next_button.setIconSize(next_button.size())
+        next_button.setStyleSheet(self.invisible_button_style())
         button_layout.addWidget(next_button)
 
         # Espacement droit pour centrer horizontalement
         button_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
-        # Ajouter les boutons à la disposition principale
-        layout.addLayout(button_layout)
+        # Ajouter les boutons à la section centrale
+        self.center_section.addLayout(button_layout)
 
-        # Disposition pour la barre de progression (Slider)
+        # Barre de progression
         slider_layout = QHBoxLayout()
-        slider_layout.setContentsMargins(0, 0, 0, 5)  # Alignement des composants en bas du panneau
-        slider_layout.setSpacing(10)  # Espacement entre les composants
+        slider_layout.setContentsMargins(0, 0, 0, 0)
+        slider_layout.setSpacing(10)
 
         # Espacement gauche pour centrer le slider
         slider_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
         # Label du temps actuel
         self.time_label_start = QLabel("0:00")
-        self.time_label_start.setStyleSheet("color: white; font-size: 10px;")  # Taille réduite du texte
+        self.time_label_start.setStyleSheet("color: white; font-size: 10px;")
         slider_layout.addWidget(self.time_label_start)
 
         # Barre de progression
@@ -71,6 +117,7 @@ class MusicControls(QWidget):
         self.music_slider.setMinimum(0)
         self.music_slider.setMaximum(100)
         self.music_slider.setValue(50)
+        self.music_slider.setFixedWidth(300)
         self.music_slider.setStyleSheet("""
             QSlider::groove:horizontal {
                 height: 6px;
@@ -85,19 +132,22 @@ class MusicControls(QWidget):
                 margin: -3px 0;
             }
         """)
-        self.music_slider.setFixedWidth(300)  # Largeur contrôlée pour ne pas prendre toute la fenêtre
         slider_layout.addWidget(self.music_slider)
 
         # Label du temps total
-        self.time_label_end = QLabel("-3:00")
-        self.time_label_end.setStyleSheet("color: white; font-size: 10px;")  # Taille réduite du texte
+        self.time_label_end = QLabel("-0:00")
+        self.time_label_end.setStyleSheet("color: white; font-size: 10px;")
         slider_layout.addWidget(self.time_label_end)
 
         # Espacement droit pour centrer le slider
         slider_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
-        # Ajouter la disposition du slider
-        layout.addLayout(slider_layout)
+        # Ajouter le slider à la section centrale
+        self.center_section.addLayout(slider_layout)
+        layout.addLayout(self.center_section)
+
+        # Espacement droit de la disposition principale
+        layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
     def invisible_button_style(self):
         """Retourne le style pour des boutons invisibles ou minimalistes."""
