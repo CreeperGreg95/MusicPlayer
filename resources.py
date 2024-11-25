@@ -10,3 +10,9 @@ FORWARD_ICON = "assets/icons/forward_icon.png" # Coming soon
 
 # Icône de la fenêtre
 WINDOW_ICON = "assets/icons/spotifylogo.jpg"
+
+# Icônes du lecteur de musique
+
+PREV_ICON = "assets/icons/previous.png"
+PLAY_ICON = "assets/icons/play.png"
+NEXT_ICON = "assets/icons/next.png"

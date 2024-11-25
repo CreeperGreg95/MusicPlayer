@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import (
     QPushButton, QLineEdit, QSpacerItem, QSizePolicy
 )
 from resources import *  # Import des ressources (icônes)
+from music_controls import MusicControls  # Import des contrôles de musique
+
 
 class MusicPlayer(QMainWindow):
     def __init__(self):
@@ -13,7 +15,7 @@ class MusicPlayer(QMainWindow):
 
         # Configuration de la fenêtre principale
         self.setWindowTitle("Lecteur de Musique")
-        self.setGeometry(100, 100, 800, 500)
+        self.setGeometry(100, 100, 1000, 800)
         self.setStyleSheet("background-color: #000000;")  # Fond noir bien foncé
 
         # Définir l'icône de la fenêtre
@@ -28,6 +30,9 @@ class MusicPlayer(QMainWindow):
 
         # Ajouter la barre supérieure
         self.add_top_bar()
+
+        # Ajouter un panneau de fond pour les contrôles de musique en bas
+        self.add_bottom_panel()
 
     def add_top_bar(self):
         """Ajoute une barre supérieure fixée tout en haut."""
@@ -70,7 +75,7 @@ class MusicPlayer(QMainWindow):
         self.top_layout.addWidget(self.home_button)
 
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Rechercher...")
+        self.search_bar.setPlaceholderText("Qu'est-ce que vous voulez écouter ?")
         self.search_bar.setFixedHeight(30)
         self.search_bar.setStyleSheet("""
             QLineEdit {
@@ -104,6 +109,25 @@ class MusicPlayer(QMainWindow):
 
         # Ajouter la barre supérieure en haut
         self.layout.addWidget(self.top_bar, alignment=Qt.AlignTop)
+
+    def add_bottom_panel(self):
+        """Ajoute un panneau de fond pour les contrôles de musique en bas."""
+        # Créer un conteneur pour le panneau inférieur
+        self.bottom_panel = QWidget()
+        self.bottom_panel.setFixedHeight(100)  # Hauteur réduite du panneau inférieur
+        self.bottom_panel.setStyleSheet("""
+            background-color: #1E1E1E;  /* Fond gris foncé */
+        """)
+
+        # Ajouter les contrôles de musique dans le panneau inférieur
+        self.bottom_layout = QVBoxLayout(self.bottom_panel)
+        self.bottom_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.music_controls = MusicControls()
+        self.bottom_layout.addWidget(self.music_controls)
+
+        # Ajouter le panneau en bas de la fenêtre
+        self.layout.addWidget(self.bottom_panel, alignment=Qt.AlignBottom)
 
     def resizeEvent(self, event):
         """Recentrer dynamiquement la barre de recherche et le bouton Home."""
