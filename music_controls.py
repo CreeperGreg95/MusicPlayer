@@ -66,9 +66,6 @@ class MusicControls(QWidget):
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(15)
 
-        # Espacement gauche pour centrer horizontalement
-        button_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
-
         # Bouton précédent
         prev_button = QPushButton()
         prev_button.setIcon(QIcon(PREV_ICON))
@@ -93,9 +90,6 @@ class MusicControls(QWidget):
         next_button.setStyleSheet(self.invisible_button_style())
         button_layout.addWidget(next_button)
 
-        # Espacement droit pour centrer horizontalement
-        button_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
-
         # Ajouter les boutons à la section centrale
         self.center_section.addLayout(button_layout)
 
@@ -103,9 +97,6 @@ class MusicControls(QWidget):
         slider_layout = QHBoxLayout()
         slider_layout.setContentsMargins(0, 0, 0, 0)
         slider_layout.setSpacing(10)
-
-        # Espacement gauche pour centrer le slider
-        slider_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
         # Label du temps actuel
         self.time_label_start = QLabel("0:00")
@@ -116,7 +107,7 @@ class MusicControls(QWidget):
         self.music_slider = QSlider(Qt.Horizontal)
         self.music_slider.setMinimum(0)
         self.music_slider.setMaximum(100)
-        self.music_slider.setValue(50)
+        self.music_slider.setValue(0)  # Initialisé à 0
         self.music_slider.setFixedWidth(300)
         self.music_slider.setStyleSheet("""
             QSlider::groove:horizontal {
@@ -139,15 +130,37 @@ class MusicControls(QWidget):
         self.time_label_end.setStyleSheet("color: white; font-size: 10px;")
         slider_layout.addWidget(self.time_label_end)
 
-        # Espacement droit pour centrer le slider
-        slider_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
-
         # Ajouter le slider à la section centrale
         self.center_section.addLayout(slider_layout)
         layout.addLayout(self.center_section)
 
-        # Espacement droit de la disposition principale
-        layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        # Section droite : Paroles et volume
+        self.right_section = QHBoxLayout()
+        self.right_section.setSpacing(5)
+
+        # Bouton paroles (carré)
+        lyrics_button = QPushButton()
+        lyrics_button.setIcon(QIcon("assets/icons/lyrics_icon.png"))
+        lyrics_button.setFixedSize(28, 28)
+        lyrics_button.setIconSize(lyrics_button.size())
+        lyrics_button.setStyleSheet(self.invisible_button_style())
+        self.right_section.addWidget(lyrics_button)
+
+        # Contrôle du volume
+        self.volume_icon = QLabel()
+        self.volume_icon.setFixedSize(20, 20)
+        self.volume_icon.setPixmap(QPixmap(VOLUME_ICON_33).scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.right_section.addWidget(self.volume_icon)
+
+        self.volume_slider = QSlider(Qt.Horizontal)
+        self.volume_slider.setMinimum(0)
+        self.volume_slider.setMaximum(100)
+        self.volume_slider.setValue(50)
+        self.volume_slider.setFixedWidth(100)
+        self.volume_slider.valueChanged.connect(self.update_volume_icon)
+        self.right_section.addWidget(self.volume_slider)
+
+        layout.addLayout(self.right_section)
 
     def invisible_button_style(self):
         """Retourne le style pour des boutons invisibles ou minimalistes."""
@@ -161,3 +174,16 @@ class MusicControls(QWidget):
             background-color: #333333;
         }
         """
+
+    def update_volume_icon(self):
+        """Met à jour l'icône du volume en fonction de la valeur du slider."""
+        value = self.volume_slider.value()
+        if value == 0:
+            self.volume_icon.setPixmap(QPixmap(VOLUME_ICON_0).scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        elif 1 < value < 33:
+            self.volume_icon.setPixmap(QPixmap(VOLUME_ICON_33).scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        elif 34 < value < 66:
+            self.volume_icon.setPixmap(QPixmap(VOLUME_ICON_33).scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            if 67 < value < 100:
+                self.volume_icon.setPixmap(QPixmap(VOLUME_ICON_100).scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))

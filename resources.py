@@ -17,5 +17,15 @@ PLAY_ICON = "assets/icons/play.png"
 PAUSE_ICON = "assets/icons/pause.png"
 NEXT_ICON = "assets/icons/next.png"
 
-# Icones pour les musiques
+# Icônes pour les musiques
 ALBUM_PLACEHOLDER = "assets/icons/song_placeholder.png"
+
+# Icônes pour le son
+VOLUME_ICON_0 = "assets/icons/volume_off.png"
+VOLUME_ICON_33 = "assets/icons/volume_low.png"
+VOLUME_ICON_66 = "assets/icons/volume_medium.png"
+VOLUME_ICON_100 = "assets/icons/volume_high.png"
+
+# Icône pour les paroles
+
+LYRICS_ICON = "assets/icons/lyrics.png"
