@@ -24,7 +24,7 @@ ALBUM_PLACEHOLDER = "assets/icons/song_placeholder.png"
 VOLUME_ICON_0 = "assets/icons/volume_off.png"
 VOLUME_ICON_33 = "assets/icons/volume_low.png"
 VOLUME_ICON_66 = "assets/icons/volume_medium.png"
-VOLUME_ICON_100 = "assets/icons/volume_high.png"
+VOLUME_ICON_100 = "assets/icons/volume_max.png"
 
 # Icône pour les paroles
 
