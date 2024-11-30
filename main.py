@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
 )
 from resources import *  # Import des ressources (icônes)
 from music_controls import MusicControls  # Import des contrôles de musique
+from library import LibraryPanel  # Import du panneau de bibliothèque
 
 
 class MusicPlayer(QMainWindow):
@@ -15,34 +16,54 @@ class MusicPlayer(QMainWindow):
 
         # Configuration de la fenêtre principale
         self.setWindowTitle("Lecteur de Musique")
-        self.setGeometry(100, 100, 1000, 800)
+        self.setGeometry(100, 100, 1200, 800)
         self.setStyleSheet("background-color: #000000;")  # Fond noir bien foncé
 
         # Définir l'icône de la fenêtre
-        self.setWindowIcon(QIcon(WINDOW_ICON))  # Utilisation de l'icône de la fenêtre
+        self.setWindowIcon(QIcon(WINDOW_ICON))
 
         # Conteneur principal
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        self.layout = QVBoxLayout(self.central_widget)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        self.main_layout = QHBoxLayout(self.central_widget)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+
+        # Ajouter la bibliothèque
+        self.add_library_panel()
+
+        # Ajouter un panneau principal pour la barre supérieure et le contenu principal
+        self.central_panel = QVBoxLayout()
+        self.central_panel.setContentsMargins(0, 0, 0, 0)
+        self.central_panel.setSpacing(0)
 
         # Ajouter la barre supérieure
         self.add_top_bar()
 
+        # Ajouter un espace pour le contenu principal (placeholder)
+        self.add_main_content_placeholder()
+
         # Ajouter un panneau de fond pour les contrôles de musique en bas
         self.add_bottom_panel()
+
+        # Ajouter le panneau central à la disposition principale
+        self.main_layout.addLayout(self.central_panel)
+
+    def add_library_panel(self):
+        """Ajoute le panneau de bibliothèque à gauche."""
+        self.library_panel = LibraryPanel()
+        self.library_panel.setFixedWidth(200)
+        self.main_layout.addWidget(self.library_panel)
 
     def add_top_bar(self):
         """Ajoute une barre supérieure fixée tout en haut."""
         self.top_bar = QWidget()
-        self.top_bar.setFixedHeight(50)  # Hauteur de la barre
-        self.top_bar.setStyleSheet("background-color: #1E1E1E;")  # Fond gris foncé
+        self.top_bar.setFixedHeight(50)
+        self.top_bar.setStyleSheet("background-color: #1E1E1E;")
 
         self.top_layout = QHBoxLayout(self.top_bar)
-        self.top_layout.setContentsMargins(10, 5, 10, 0)  # Réduction des marges hautes
-        self.top_layout.setSpacing(10)  # Espacement réduit entre les éléments
+        self.top_layout.setContentsMargins(10, 5, 10, 0)
+        self.top_layout.setSpacing(10)
 
         # Partie gauche
         menu_button = QPushButton("...")
@@ -68,7 +89,7 @@ class MusicPlayer(QMainWindow):
 
         # Partie centrale
         self.home_button = QPushButton()
-        self.home_button.setIcon(QIcon(HOME_ICON))  # Utilisation de l'icône Home
+        self.home_button.setIcon(QIcon(HOME_ICON))
         self.home_button.setIconSize(self.home_button.size())
         self.home_button.setFixedSize(30, 30)
         self.home_button.setStyleSheet(self.invisible_button_style())
@@ -88,67 +109,47 @@ class MusicPlayer(QMainWindow):
         """)
         self.top_layout.addWidget(self.search_bar)
 
-        # Espacement pour équilibrer les côtés
-        self.right_spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.top_layout.addSpacerItem(self.right_spacer)
-
         # Partie droite
         account_button = QPushButton()
-        account_button.setIcon(QIcon(PROFILE_ICON))  # Utilisation de l'icône Profil
-        account_button.setIconSize(account_button.size())
+        account_button.setIcon(QIcon(PROFILE_ICON))
         account_button.setFixedSize(30, 30)
         account_button.setStyleSheet(self.invisible_button_style())
         self.top_layout.addWidget(account_button)
 
         notification_button = QPushButton()
-        notification_button.setIcon(QIcon(NOTIFICATION_ICON))  # Utilisation de l'icône Notification
-        notification_button.setIconSize(notification_button.size())
+        notification_button.setIcon(QIcon(NOTIFICATION_ICON))
         notification_button.setFixedSize(30, 30)
         notification_button.setStyleSheet(self.invisible_button_style())
         self.top_layout.addWidget(notification_button)
 
-        # Ajouter la barre supérieure en haut
-        self.layout.addWidget(self.top_bar, alignment=Qt.AlignTop)
+        self.central_panel.addWidget(self.top_bar, alignment=Qt.AlignTop)
+
+    def add_main_content_placeholder(self):
+        """Ajoute un placeholder pour le contenu principal."""
+        content_placeholder = QWidget()
+        content_placeholder.setStyleSheet("background-color: #121212;")
+        self.central_panel.addWidget(content_placeholder, 1)
 
     def add_bottom_panel(self):
         """Ajoute un panneau de fond pour les contrôles de musique en bas."""
-        # Créer un conteneur pour le panneau inférieur
         self.bottom_panel = QWidget()
-        self.bottom_panel.setFixedHeight(100)  # Hauteur réduite du panneau inférieur
-        self.bottom_panel.setStyleSheet("""
-            background-color: #1E1E1E;  /* Fond gris foncé */
-        """)
+        self.bottom_panel.setFixedHeight(100)
+        self.bottom_panel.setStyleSheet("background-color: #1E1E1E;")
 
-        # Ajouter les contrôles de musique dans le panneau inférieur
         self.bottom_layout = QVBoxLayout(self.bottom_panel)
         self.bottom_layout.setContentsMargins(0, 0, 0, 0)
 
         self.music_controls = MusicControls()
         self.bottom_layout.addWidget(self.music_controls)
 
-        # Ajouter le panneau en bas de la fenêtre
-        self.layout.addWidget(self.bottom_panel, alignment=Qt.AlignBottom)
-
-    def resizeEvent(self, event):
-        """Recentrer dynamiquement la barre de recherche et le bouton Home."""
-        # Ajuster la largeur de la barre de recherche pour s'adapter à la taille de la fenêtre
-        window_width = self.width()
-
-        # Ajuste la largeur de la barre de recherche dynamiquement
-        max_search_width = window_width // 3  # La barre occupe un tiers de la fenêtre
-        min_search_width = 200  # Largeur minimale de la barre
-        self.search_bar.setFixedWidth(max(min_search_width, max_search_width))
-
-        super().resizeEvent(event)
+        self.central_panel.addWidget(self.bottom_panel, alignment=Qt.AlignBottom)
 
     def invisible_button_style(self):
-        """Style pour un bouton invisible ou minimaliste."""
         return """
         QPushButton {
             background-color: #1E1E1E;
             border: none;
             color: white;
-            font-size: 14px;
         }
         QPushButton:hover {
             background-color: #333333;
@@ -156,23 +157,17 @@ class MusicPlayer(QMainWindow):
         """
 
     def grayed_out_button_style(self):
-        """Style pour un bouton désactivé."""
         return """
         QPushButton {
             background-color: #1E1E1E;
-            border: none;
             color: gray;
-            font-size: 14px;
-        }
-        QPushButton:hover {
-            background-color: #1E1E1E;  /* Pas de changement au survol */
         }
         """
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")  # Style uniforme entre plateformes
+    app.setStyle("Fusion")
     window = MusicPlayer()
     window.show()
     sys.exit(app.exec_())
