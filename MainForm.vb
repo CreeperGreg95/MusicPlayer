@@ -5,7 +5,7 @@ Imports NAudio.Wave
 Imports System.Speech.Synthesis
 Imports System.Windows.Forms
 
-Public Class Form1
+Public Class MainForm
     Inherits Form
 
     Private sidebar As Panel
@@ -27,11 +27,16 @@ Public Class Form1
     Private karaokeSynth As SpeechSynthesizer
 
     Private offlineMode As Boolean = False
+#Disable Warning BC40004 ' variable 'contextMenu' est en conflit avec property 'contextMenu' dans le class 'Control' de base et doit être déclaré 'Shadows'.
+    Private contextMenu As ContextMenuStrip
+#Enable Warning BC40004 ' variable 'contextMenu' est en conflit avec property 'contextMenu' dans le class 'Control' de base et doit être déclaré 'Shadows'.
 
     Private connectionString As String = "Data Source=YourServer;Initial Catalog=YourDatabase;Integrated Security=True"
 
     Public Sub New()
+#Disable Warning BC30451 ' 'InitializeComponent' n'est pas déclaré. Il peut être inaccessible en raison de son niveau de protection.
         InitializeComponent()
+#Enable Warning BC30451 ' 'InitializeComponent' n'est pas déclaré. Il peut être inaccessible en raison de son niveau de protection.
 
         Me.Text = "Music Player"
         Me.Size = New Size(800, 600)
@@ -43,6 +48,22 @@ Public Class Form1
             .Dock = DockStyle.Left
         }
         Me.Controls.Add(sidebar)
+
+        ' Ajouter le menu contextuel à la sidebar
+        contextMenu = New ContextMenuStrip()
+        Dim createPlaylistItem As New ToolStripMenuItem("Créer Playlist")
+        Dim createPlaylistFolderItem As New ToolStripMenuItem("Créer Dossier de Playlists")
+
+        ' Ajouter des événements pour les éléments du menu
+        AddHandler createPlaylistItem.Click, AddressOf CreatePlaylist_Click
+        AddHandler createPlaylistFolderItem.Click, AddressOf CreatePlaylistFolder_Click
+
+        ' Ajouter les éléments au menu contextuel
+        contextMenu.Items.Add(createPlaylistItem)
+        contextMenu.Items.Add(createPlaylistFolderItem)
+
+        ' Attacher le menu contextuel à la sidebar
+        sidebar.ContextMenuStrip = contextMenu
 
         btnLibrary = New Button() With {.Text = "Library", .Dock = DockStyle.Top}
         btnPlaylists = New Button() With {.Text = "Playlists", .Dock = DockStyle.Top}
@@ -88,6 +109,18 @@ Public Class Form1
         karaokeSynth = New SpeechSynthesizer()
 
         AddHandler Me.KeyDown, AddressOf Form1_KeyDown
+    End Sub
+
+    ' Gestion du clic sur "Créer Playlist"
+    Private Sub CreatePlaylist_Click(sender As Object, e As EventArgs)
+        MessageBox.Show("Création d'une nouvelle playlist")
+        ' Logique pour créer une playlist
+    End Sub
+
+    ' Gestion du clic sur "Créer Dossier de Playlists"
+    Private Sub CreatePlaylistFolder_Click(sender As Object, e As EventArgs)
+        MessageBox.Show("Création d'un nouveau dossier de playlists")
+        ' Logique pour créer un dossier de playlists
     End Sub
 
     Private Sub SearchBox_TextChanged(sender As Object, e As EventArgs)
