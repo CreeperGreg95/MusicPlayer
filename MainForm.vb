@@ -1,6 +1,6 @@
-﻿Imports NAudio.Wave
-Imports NAudio.CoreAudioApi
-Imports System.Data.SqlClient
+﻿Imports System.Data.SqlClient
+Imports System.Net.Http
+Imports NAudio.Wave
 
 Public Class Form1
     Inherits Form
@@ -19,8 +19,6 @@ Public Class Form1
     Private resultsList As ListBox
     Private waveOut As WaveOutEvent
     Private audioFileReader As AudioFileReader
-    Private isPlaying As Boolean = False
-    Private isPaused As Boolean = False
 
     ' Connexion à la base de données
     Private connectionString As String = "Data Source=YourServer;Initial Catalog=YourDatabase;Integrated Security=True"
@@ -56,8 +54,11 @@ Public Class Form1
         ' Search Box
         searchBox = New TextBox() With {
             .Dock = DockStyle.Top,
-            .PlaceholderText = "Search for a song..."
+            .Text = "Search for a song...",
+            .ForeColor = Color.Gray
         }
+        AddHandler searchBox.Enter, AddressOf searchBox_Enter
+        AddHandler searchBox.Leave, AddressOf searchBox_Leave
         AddHandler searchBox.TextChanged, AddressOf SearchBox_TextChanged
         mainPanel.Controls.Add(searchBox)
 
@@ -82,7 +83,7 @@ Public Class Form1
         btnNext = New Button() With {.Text = "⏭", .Dock = DockStyle.Left}
         playerControls.Controls.AddRange(New Control() {btnPrev, btnPlay, btnPause, btnNext})
 
-        ' Initialiser le lecteur audio en streaming
+        ' Initialiser le lecteur audio
         waveOut = New WaveOutEvent()
     End Sub
 
@@ -125,61 +126,58 @@ Public Class Form1
         End If
     End Sub
 
-    ' Jouer la chanson en streaming
+    ' Jouer la chanson
     Private Sub PlaySong(songName As String)
         ' Rechercher l'URL du fichier audio dans la base de données
-        Dim audioUrl As String = GetSongFileUrl(songName)
-        If Not String.IsNullOrEmpty(audioUrl) Then
-            ' Lancer la lecture en streaming avec NAudio
-            Try
-                Dim stream As New System.Net.Http.HttpClient()
-                Dim audioStream As System.IO.Stream = stream.GetStreamAsync(audioUrl).Result
-
-                audioFileReader = New AudioFileReader(audioStream)
-                waveOut.Init(audioFileReader)
-                waveOut.Play()
-                isPlaying = True
-                isPaused = False
-            Catch ex As Exception
-                MessageBox.Show("Erreur de lecture du flux audio: " & ex.Message)
-            End Try
+        Dim audioFilePath As String = GetSongFilePath(songName)
+        If Not String.IsNullOrEmpty(audioFilePath) Then
+            ' Lancer la lecture en streaming
+            PlayAudioFromUrl(audioFilePath)
         End If
     End Sub
 
-    ' Récupérer l'URL du fichier audio dans la base de données
-    Private Function GetSongFileUrl(songName As String) As String
+    ' Récupérer le chemin du fichier audio dans la base de données
+    Private Function GetSongFilePath(songName As String) As String
         Try
             Using conn As New SqlConnection(connectionString)
                 conn.Open()
-                Dim query As String = "SELECT SongFileUrl FROM Songs WHERE SongName = @SongName"
+                Dim query As String = "SELECT SongFilePath FROM Songs WHERE SongName = @SongName"
                 Dim cmd As New SqlCommand(query, conn)
                 cmd.Parameters.AddWithValue("@SongName", songName)
-                Dim fileUrl As Object = cmd.ExecuteScalar()
-                If fileUrl IsNot Nothing Then
-                    Return fileUrl.ToString()
+                Dim filePath As Object = cmd.ExecuteScalar()
+                If filePath IsNot Nothing Then
+                    Return filePath.ToString()
                 End If
             End Using
         Catch ex As Exception
-            MessageBox.Show("Erreur de récupération de l'URL: " & ex.Message)
+            MessageBox.Show("Erreur de récupération du fichier: " & ex.Message)
         End Try
         Return String.Empty
     End Function
 
+    ' Lecture audio en streaming via NAudio
+    Private Sub PlayAudioFromUrl(audioUrl As String)
+        Try
+            ' Télécharger le flux audio en streaming
+            Dim client As New HttpClient()
+            Dim audioStream As IO.Stream = client.GetStreamAsync(audioUrl).Result
+
+            ' Lire le flux audio
+            audioFileReader = New AudioFileReader(audioStream)
+            waveOut.Init(audioFileReader)
+            waveOut.Play()
+        Catch ex As Exception
+            MessageBox.Show("Erreur lors de la lecture de l'audio: " & ex.Message)
+        End Try
+    End Sub
+
     ' Contrôle des boutons Play, Pause, etc.
     Private Sub btnPlay_Click(sender As Object, e As EventArgs)
-        If Not isPlaying Then
-            waveOut.Play()
-            isPlaying = True
-            isPaused = False
-        End If
+        waveOut.Play()
     End Sub
 
     Private Sub btnPause_Click(sender As Object, e As EventArgs)
-        If isPlaying Then
-            waveOut.Pause()
-            isPlaying = False
-            isPaused = True
-        End If
+        waveOut.Pause()
     End Sub
 
     Private Sub btnNext_Click(sender As Object, e As EventArgs)
@@ -188,5 +186,20 @@ Public Class Form1
 
     Private Sub btnPrev_Click(sender As Object, e As EventArgs)
         ' Implémenter la logique pour la chanson précédente
+    End Sub
+
+    ' Gestion du texte de remplacement pour la recherche (simule un placeholder)
+    Private Sub searchBox_Enter(sender As Object, e As EventArgs)
+        If searchBox.Text = "Search for a song..." Then
+            searchBox.Text = ""
+            searchBox.ForeColor = Color.Black
+        End If
+    End Sub
+
+    Private Sub searchBox_Leave(sender As Object, e As EventArgs)
+        If String.IsNullOrEmpty(searchBox.Text) Then
+            searchBox.Text = "Search for a song..."
+            searchBox.ForeColor = Color.Gray
+        End If
     End Sub
 End Class
