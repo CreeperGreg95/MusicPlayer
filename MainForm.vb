@@ -1,6 +1,9 @@
 ﻿Imports System.Data.SqlClient
+Imports System.IO
 Imports System.Net.Http
 Imports NAudio.Wave
+Imports System.Speech.Synthesis
+Imports System.Windows.Forms
 
 Public Class Form1
     Inherits Form
@@ -17,21 +20,23 @@ Public Class Form1
     Private btnPrev As Button
     Private searchBox As TextBox
     Private resultsList As ListBox
-    Private waveOut As WaveOutEvent
-    Private audioFileReader As AudioFileReader
 
-    ' Connexion à la base de données
+    Private waveOut As WaveOutEvent
+    Private mediaReader As MediaFoundationReader
+    Private currentStream As Stream
+    Private karaokeSynth As SpeechSynthesizer
+
+    Private offlineMode As Boolean = False
+
     Private connectionString As String = "Data Source=YourServer;Initial Catalog=YourDatabase;Integrated Security=True"
 
     Public Sub New()
         InitializeComponent()
 
-        ' Initialiser l'interface
         Me.Text = "Music Player"
         Me.Size = New Size(800, 600)
         Me.StartPosition = FormStartPosition.CenterScreen
 
-        ' Sidebar
         sidebar = New Panel() With {
             .Size = New Size(200, Me.Height),
             .BackColor = Color.DarkGray,
@@ -44,32 +49,24 @@ Public Class Form1
         btnSettings = New Button() With {.Text = "Settings", .Dock = DockStyle.Top}
         sidebar.Controls.AddRange(New Control() {btnLibrary, btnPlaylists, btnSettings})
 
-        ' Main Panel
         mainPanel = New Panel() With {
             .Dock = DockStyle.Fill,
             .BackColor = Color.White
         }
         Me.Controls.Add(mainPanel)
 
-        ' Search Box
         searchBox = New TextBox() With {
-            .Dock = DockStyle.Top,
-            .Text = "Search for a song...",
-            .ForeColor = Color.Gray
+            .Dock = DockStyle.Top
         }
-        AddHandler searchBox.Enter, AddressOf searchBox_Enter
-        AddHandler searchBox.Leave, AddressOf searchBox_Leave
         AddHandler searchBox.TextChanged, AddressOf SearchBox_TextChanged
         mainPanel.Controls.Add(searchBox)
 
-        ' Results List
         resultsList = New ListBox() With {
             .Dock = DockStyle.Fill
         }
         AddHandler resultsList.DoubleClick, AddressOf ResultsList_DoubleClick
         mainPanel.Controls.Add(resultsList)
 
-        ' Player Controls
         playerControls = New Panel() With {
             .Size = New Size(Me.Width, 50),
             .Dock = DockStyle.Bottom,
@@ -81,24 +78,27 @@ Public Class Form1
         btnPlay = New Button() With {.Text = "▶", .Dock = DockStyle.Left}
         btnPause = New Button() With {.Text = "⏸", .Dock = DockStyle.Left}
         btnNext = New Button() With {.Text = "⏭", .Dock = DockStyle.Left}
+
+        AddHandler btnPlay.Click, AddressOf btnPlay_Click
+        AddHandler btnPause.Click, AddressOf btnPause_Click
+
         playerControls.Controls.AddRange(New Control() {btnPrev, btnPlay, btnPause, btnNext})
 
-        ' Initialiser le lecteur audio
         waveOut = New WaveOutEvent()
+        karaokeSynth = New SpeechSynthesizer()
+
+        AddHandler Me.KeyDown, AddressOf Form1_KeyDown
     End Sub
 
-    ' Recherche de musique dans la base de données
     Private Sub SearchBox_TextChanged(sender As Object, e As EventArgs)
-        ' Effectuer la recherche dans la base de données
         Dim searchQuery As String = searchBox.Text
-        If searchQuery.Length >= 3 Then ' Limiter la recherche aux chaînes de 3 caractères ou plus
+        If searchQuery.Length >= 3 Then
             LoadSearchResults(searchQuery)
         Else
             resultsList.Items.Clear()
         End If
     End Sub
 
-    ' Charger les résultats de recherche
     Private Sub LoadSearchResults(searchQuery As String)
         resultsList.Items.Clear()
         Try
@@ -118,7 +118,6 @@ Public Class Form1
         End Try
     End Sub
 
-    ' Lorsque l'utilisateur double-clique sur une chanson dans la liste
     Private Sub ResultsList_DoubleClick(sender As Object, e As EventArgs)
         If resultsList.SelectedItem IsNot Nothing Then
             Dim selectedSong As String = resultsList.SelectedItem.ToString()
@@ -126,27 +125,23 @@ Public Class Form1
         End If
     End Sub
 
-    ' Jouer la chanson
     Private Sub PlaySong(songName As String)
-        ' Rechercher l'URL du fichier audio dans la base de données
-        Dim audioFilePath As String = GetSongFilePath(songName)
-        If Not String.IsNullOrEmpty(audioFilePath) Then
-            ' Lancer la lecture en streaming
-            PlayAudioFromUrl(audioFilePath)
+        Dim audioUrl As String = GetSongUrl(songName)
+        If Not String.IsNullOrEmpty(audioUrl) Then
+            PlayAudioFromUrl(audioUrl)
         End If
     End Sub
 
-    ' Récupérer le chemin du fichier audio dans la base de données
-    Private Function GetSongFilePath(songName As String) As String
+    Private Function GetSongUrl(songName As String) As String
         Try
             Using conn As New SqlConnection(connectionString)
                 conn.Open()
-                Dim query As String = "SELECT SongFilePath FROM Songs WHERE SongName = @SongName"
+                Dim query As String = "SELECT SongUrl FROM Songs WHERE SongName = @SongName"
                 Dim cmd As New SqlCommand(query, conn)
                 cmd.Parameters.AddWithValue("@SongName", songName)
-                Dim filePath As Object = cmd.ExecuteScalar()
-                If filePath IsNot Nothing Then
-                    Return filePath.ToString()
+                Dim url As Object = cmd.ExecuteScalar()
+                If url IsNot Nothing Then
+                    Return url.ToString()
                 End If
             End Using
         Catch ex As Exception
@@ -155,51 +150,56 @@ Public Class Form1
         Return String.Empty
     End Function
 
-    ' Lecture audio en streaming via NAudio
-    Private Sub PlayAudioFromUrl(audioUrl As String)
+    Private Async Sub PlayAudioFromUrl(audioUrl As String)
         Try
-            ' Télécharger le flux audio en streaming
-            Dim client As New HttpClient()
-            Dim audioStream As IO.Stream = client.GetStreamAsync(audioUrl).Result
+            StopPlayback()
 
-            ' Lire le flux audio
-            audioFileReader = New AudioFileReader(audioStream)
-            waveOut.Init(audioFileReader)
+            Dim client As New HttpClient()
+            currentStream = Await client.GetStreamAsync(audioUrl)
+
+            mediaReader = New MediaFoundationReader(audioUrl)
+            waveOut.Init(mediaReader)
             waveOut.Play()
         Catch ex As Exception
-            MessageBox.Show("Erreur lors de la lecture de l'audio: " & ex.Message)
+            MessageBox.Show("Erreur de lecture audio: " & ex.Message)
         End Try
     End Sub
 
-    ' Contrôle des boutons Play, Pause, etc.
+    Private Sub StopPlayback()
+        If waveOut IsNot Nothing Then
+            waveOut.Stop()
+        End If
+        If mediaReader IsNot Nothing Then
+            mediaReader.Dispose()
+        End If
+        If currentStream IsNot Nothing Then
+            currentStream.Dispose()
+        End If
+    End Sub
+
     Private Sub btnPlay_Click(sender As Object, e As EventArgs)
-        waveOut.Play()
+        If waveOut IsNot Nothing Then
+            waveOut.Play()
+        End If
     End Sub
 
     Private Sub btnPause_Click(sender As Object, e As EventArgs)
-        waveOut.Pause()
-    End Sub
-
-    Private Sub btnNext_Click(sender As Object, e As EventArgs)
-        ' Implémenter la logique pour la chanson suivante
-    End Sub
-
-    Private Sub btnPrev_Click(sender As Object, e As EventArgs)
-        ' Implémenter la logique pour la chanson précédente
-    End Sub
-
-    ' Gestion du texte de remplacement pour la recherche (simule un placeholder)
-    Private Sub searchBox_Enter(sender As Object, e As EventArgs)
-        If searchBox.Text = "Search for a song..." Then
-            searchBox.Text = ""
-            searchBox.ForeColor = Color.Black
+        If waveOut IsNot Nothing Then
+            waveOut.Pause()
         End If
     End Sub
 
-    Private Sub searchBox_Leave(sender As Object, e As EventArgs)
-        If String.IsNullOrEmpty(searchBox.Text) Then
-            searchBox.Text = "Search for a song..."
-            searchBox.ForeColor = Color.Gray
-        End If
+    Private Sub Form1_KeyDown(sender As Object, e As KeyEventArgs)
+        Select Case e.KeyCode
+            Case Keys.Space
+                btnPlay.PerformClick()
+            Case Keys.P
+                btnPause.PerformClick()
+        End Select
+    End Sub
+
+    Private Sub ActivateKaraokeMode(text As String)
+        karaokeSynth.SpeakAsyncCancelAll()
+        karaokeSynth.SpeakAsync(text)
     End Sub
 End Class
