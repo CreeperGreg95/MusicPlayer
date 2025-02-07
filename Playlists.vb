@@ -1,8 +1,12 @@
 ﻿Imports System.Data.SqlClient
+Imports System.Net.Http
+Imports System.Text
+Imports System.Threading.Tasks
 Imports System.Windows.Forms
+Imports System.Web.Script.Serialization
 
 Public Class Playlists
-    Private connectionString As String = "Data Source=YourServer;Initial Catalog=YourDatabase;Integrated Security=True"
+    Private serverUrl As String = "https://musicplayer.creepergreg951.eu/playlist_verifier.php"
     Private contextMenu As ContextMenuStrip
     Private playlistPanel As Panel
 
@@ -27,84 +31,66 @@ Public Class Playlists
         playlistPanel.ContextMenuStrip = contextMenu
     End Sub
 
-    ' Méthode publique pour créer une playlist
-    Public Sub CreatePlaylist(playlistName As String)
+    ' Fonction pour envoyer une requête POST au serveur PHP
+    Private Async Function SendPostRequest(playlistName As String, userID As Integer, type As String) As Task(Of String)
         Try
-            Using conn As New SqlConnection(connectionString)
-                conn.Open()
-                ' Vérifier si la playlist existe déjà
-                Dim checkQuery As String = "SELECT COUNT(*) FROM Playlists WHERE PlaylistName = @PlaylistName"
-                Dim checkCmd As New SqlCommand(checkQuery, conn)
-                checkCmd.Parameters.AddWithValue("@PlaylistName", playlistName)
-                Dim result As Integer = Convert.ToInt32(checkCmd.ExecuteScalar())
-
-                If result > 0 Then
-                    MessageBox.Show("Cette playlist existe déjà !", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                Else
-                    ' Insérer la playlist dans la base de données
-                    Dim query As String = "INSERT INTO Playlists (PlaylistName) VALUES (@PlaylistName)"
-                    Dim cmd As New SqlCommand(query, conn)
-                    cmd.Parameters.AddWithValue("@PlaylistName", playlistName)
-                    cmd.ExecuteNonQuery()
-
-                    MessageBox.Show("Playlist créée avec succès!", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                End If
+            Using client As New HttpClient()
+                Dim data As New Dictionary(Of String, String) From {
+                    {"playlistName", playlistName},
+                    {"userID", userID.ToString()},
+                    {"type", type}
+                }
+                Dim content As New FormUrlEncodedContent(data)
+                Dim response As HttpResponseMessage = Await client.PostAsync(serverUrl, content)
+                Return Await response.Content.ReadAsStringAsync()
             End Using
         Catch ex As Exception
-            MessageBox.Show("Erreur lors de la création de la playlist : " & ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return "Erreur: " & ex.Message
         End Try
+    End Function
+
+    ' Méthode pour vérifier et créer une playlist via PHP
+    Public Async Function CheckAndCreatePlaylist(playlistName As String, userID As Integer, type As String) As Task
+        If String.IsNullOrEmpty(playlistName) Then
+            MessageBox.Show("Nom invalide.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        Dim jsonResponse As String = Await SendPostRequest(playlistName, userID, type)
+
+        Try
+            Dim result As Dictionary(Of String, Object) = New JavaScriptSerializer().Deserialize(Of Dictionary(Of String, Object))(jsonResponse)
+            If result.ContainsKey("status") AndAlso result("status").ToString() = "success" Then
+                MessageBox.Show(result("message").ToString(), "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Else
+                MessageBox.Show(result("message").ToString(), "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+        Catch ex As Exception
+            MessageBox.Show("Réponse invalide du serveur.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Function
+
+    ' Création d'une playlist
+    Public Async Sub CreatePlaylist(playlistName As String, userID As Integer)
+        Await CheckAndCreatePlaylist(playlistName, userID, "playlist")
     End Sub
 
-    ' Méthode publique pour créer un dossier de playlists
-    Public Sub CreatePlaylistFolder(folderName As String)
-        Try
-            Using conn As New SqlConnection(connectionString)
-                conn.Open()
-                ' Vérifier si le dossier existe déjà
-                Dim checkQuery As String = "SELECT COUNT(*) FROM PlaylistFolders WHERE FolderName = @FolderName"
-                Dim checkCmd As New SqlCommand(checkQuery, conn)
-                checkCmd.Parameters.AddWithValue("@FolderName", folderName)
-                Dim result As Integer = Convert.ToInt32(checkCmd.ExecuteScalar())
-
-                If result > 0 Then
-                    MessageBox.Show("Ce dossier existe déjà !", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                Else
-                    ' Insérer le dossier de playlists dans la base de données
-                    Dim query As String = "INSERT INTO PlaylistFolders (FolderName) VALUES (@FolderName)"
-                    Dim cmd As New SqlCommand(query, conn)
-                    cmd.Parameters.AddWithValue("@FolderName", folderName)
-                    cmd.ExecuteNonQuery()
-
-                    MessageBox.Show("Dossier de playlists créé avec succès!", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                End If
-            End Using
-        Catch ex As Exception
-            MessageBox.Show("Erreur lors de la création du dossier : " & ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
+    ' Création d'un dossier de playlists
+    Public Async Sub CreatePlaylistFolder(folderName As String, userID As Integer)
+        Await CheckAndCreatePlaylist(folderName, userID, "folder")
     End Sub
 
     ' Gestion des événements pour la création de playlists
     Public Sub CreatePlaylist_Click(sender As Object, e As EventArgs)
-        ' Demander un nom pour la nouvelle playlist
         Dim playlistName As String = InputBox("Entrez le nom de la nouvelle playlist :")
-
-        If Not String.IsNullOrEmpty(playlistName) Then
-            ' Logique pour créer la playlist
-            CreatePlaylist(playlistName)
-        Else
-            MessageBox.Show("Nom de playlist invalide.")
-        End If
+        Dim userID As Integer = 1 ' Remplacez par l'ID réel de l'utilisateur connecté
+        CreatePlaylist(playlistName, userID)
     End Sub
 
+    ' Gestion des événements pour la création de dossiers
     Public Sub CreatePlaylistFolder_Click(sender As Object, e As EventArgs)
-        ' Demander un nom pour le dossier de playlists
         Dim folderName As String = InputBox("Entrez le nom du dossier de playlists :")
-
-        If Not String.IsNullOrEmpty(folderName) Then
-            ' Logique pour créer le dossier de playlists
-            CreatePlaylistFolder(folderName)
-        Else
-            MessageBox.Show("Nom de dossier invalide.")
-        End If
+        Dim userID As Integer = 1 ' Remplacez par l'ID réel de l'utilisateur connecté
+        CreatePlaylistFolder(folderName, userID)
     End Sub
 End Class

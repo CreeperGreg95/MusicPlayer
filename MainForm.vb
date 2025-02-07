@@ -23,6 +23,7 @@ Public Class MainForm
     Private currentStream As Stream
     Private karaokeSynth As SpeechSynthesizer
 
+    Private currentUserID As Integer
     Private offlineMode As Boolean = False
     Private contextMenu As ContextMenuStrip
     Private connectionString As String = "Data Source=YourServer;Initial Catalog=YourDatabase;Integrated Security=True"
@@ -107,27 +108,68 @@ Public Class MainForm
         AddHandler Me.KeyDown, AddressOf Form1_KeyDown
 
         ' Charger les playlists à l'ouverture de la fenêtre
-        LoadPlaylists()
+        ' LoadPlaylists()
     End Sub
 
     ' Charger les playlists de la base de données
+    ' Méthode pour charger les playlists sous forme de boutons dans le sidebar
     Private Sub LoadPlaylists()
-        resultsList.Items.Clear()
+        sidebar.Controls.Clear() ' Supprimer les anciens éléments avant de recharger
+        sidebar.Controls.Add(btnSettings) ' Réajouter le bouton settings
 
         Try
             Using conn As New SqlConnection(connectionString)
                 conn.Open()
-                Dim query As String = "SELECT PlaylistName FROM Playlists"
+                Dim query As String = "SELECT PlaylistID, PlaylistName FROM Playlists WHERE UserID = @UserID"
                 Dim cmd As New SqlCommand(query, conn)
+                cmd.Parameters.AddWithValue("@UserID", currentUserID) ' Assurez-vous que currentUserID est défini après connexion
                 Dim reader As SqlDataReader = cmd.ExecuteReader()
 
                 While reader.Read()
-                    resultsList.Items.Add(reader("PlaylistName").ToString())
+                    Dim btnPlaylist As New Button() With {
+                .Text = reader("PlaylistName").ToString(),
+                .Tag = reader("PlaylistID"),
+                .Dock = DockStyle.Top
+            }
+                    AddHandler btnPlaylist.Click, AddressOf PlaylistButton_Click
+                    sidebar.Controls.Add(btnPlaylist)
                 End While
             End Using
         Catch ex As Exception
             MessageBox.Show("Erreur de connexion à la base de données: " & ex.Message)
         End Try
+    End Sub
+
+    ' Création d'une nouvelle playlist en base de données avec l'ID du compte connecté
+    Private Sub CreatePlaylist_Click(sender As Object, e As EventArgs)
+        Dim playlistName As String = InputBox("Entrez le nom de la nouvelle playlist :")
+
+        If Not String.IsNullOrEmpty(playlistName) Then
+            Try
+                Using conn As New SqlConnection(connectionString)
+                    conn.Open()
+                    Dim query As String = "INSERT INTO Playlists (PlaylistName, UserID, TotalDuration, IsCollaborative, CreatedDate) VALUES (@PlaylistName, @UserID, 0, 0, GETDATE())"
+                    Dim cmd As New SqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@PlaylistName", playlistName)
+                    cmd.Parameters.AddWithValue("@UserID", currentUserID) ' Assurez-vous que currentUserID est bien défini
+                    cmd.ExecuteNonQuery()
+                End Using
+                MessageBox.Show("Playlist créée avec succès!")
+                LoadPlaylists() ' Recharger les playlists après création
+            Catch ex As Exception
+                MessageBox.Show("Erreur lors de la création de la playlist: " & ex.Message)
+            End Try
+        Else
+            MessageBox.Show("Nom de playlist invalide.")
+        End If
+    End Sub
+
+    ' Gestion du clic sur un bouton de playlist
+    Private Sub PlaylistButton_Click(sender As Object, e As EventArgs)
+        Dim btn As Button = CType(sender, Button)
+        Dim playlistID As Integer = CInt(btn.Tag)
+        MessageBox.Show("Affichage de la playlist ID: " & playlistID)
+        ' Ici, on pourrait appeler une méthode pour charger les chansons de la playlist
     End Sub
 
     ' Gestion du clic droit sur la liste des playlists
@@ -142,20 +184,6 @@ Public Class MainForm
     End Sub
 
     ' Méthodes liées à la création de playlists
-    Private Sub CreatePlaylist_Click(sender As Object, e As EventArgs)
-        ' Demander un nom pour la nouvelle playlist
-        Dim playlistName As String = InputBox("Entrez le nom de la nouvelle playlist :")
-
-        If Not String.IsNullOrEmpty(playlistName) Then
-            ' Appeler la méthode pour créer une playlist
-            MessageBox.Show("Playlist '" & playlistName & "' créée avec succès!")
-            ' Recharger les playlists après création
-            LoadPlaylists()
-        Else
-            MessageBox.Show("Nom de playlist invalide.")
-        End If
-    End Sub
-
     Private Sub CreatePlaylistFolder_Click(sender As Object, e As EventArgs)
         ' Demander un nom pour le dossier de playlists
         Dim folderName As String = InputBox("Entrez le nom du dossier de playlists :")
