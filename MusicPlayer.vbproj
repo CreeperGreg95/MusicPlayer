@@ -170,6 +170,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AudioPlayer.vb" />
     <Compile Include="Connection.Designer.vb">
       <DependentUpon>Connection.vb</DependentUpon>
     </Compile>
