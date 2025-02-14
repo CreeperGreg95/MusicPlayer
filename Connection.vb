@@ -7,6 +7,41 @@ Imports Newtonsoft.Json.Linq
 Public Class Connection
     Private userInfoFile As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MusicPlayer", "userinfo")
 
+    ' Liste des valeurs interdites (modifiable)
+    Private invalidValues As List(Of String) = New List(Of String) From {
+    " ", vbTab, vbCrLf ' Espace, tabulation et retour à la ligne
+}
+
+    ' Méthode pour vérifier si un champ contient une valeur invalide
+    Private Function IsValidInput(input As String) As Boolean
+        ' Enlever les espaces avant et après la chaîne
+        input = input.Trim()
+
+        ' Afficher la chaîne pour déboguer
+        Debug.WriteLine("Validation de l'input: '" & input & "'")
+
+        ' Vérifie si la chaîne est vide après le trim
+        If String.IsNullOrEmpty(input) Then
+            Debug.WriteLine("Champ invalide: vide ou nul.")
+            Return False
+        End If
+
+        ' Vérifier les autres valeurs interdites comme des espaces seuls ou des tabulations
+        For Each invalidValue In invalidValues
+            ' Afficher chaque valeur interdite pour débogage
+            Debug.WriteLine("Valeur interdite: '" & invalidValue & "'")
+
+            ' Si la chaîne contient un espace ou un caractère interdit
+            If input.Contains(invalidValue) Then
+                Debug.WriteLine("Champ invalide: contient des espaces ou des caractères interdits.")
+                Return False
+            End If
+        Next
+
+        ' Si tout est bon, on considère que l'input est valide
+        Return True
+    End Function
+
     Private Sub Connection_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Check if the user info file exists
         If My.Computer.FileSystem.FileExists(userInfoFile) Then
@@ -27,6 +62,17 @@ Public Class Connection
     Private Async Sub btnLogin_Click(sender As Object, e As EventArgs) Handles btnLogin.Click
         Dim username As String = txtUsername.Text
         Dim password As String = txtPassword.Text
+
+        ' Affichage des valeurs des champs pour débogage
+        Debug.WriteLine("Valeur du champ Username: '" & username & "'")
+        Debug.WriteLine("Valeur du champ Password: '" & password & "'")
+
+        ' Vérification des champs de connexion
+        If Not IsValidInput(username) OrElse Not IsValidInput(password) Then
+            MessageBox.Show("Les champs de texte ne peuvent pas être vides ou contenir des espaces.")
+            Return
+        End If
+
         Dim url As String = "https://musicplayer.creepergreg951.eu/connection.php" ' URL de votre fichier PHP sur le serveur
 
         ' Créez un client HTTP pour envoyer les données au serveur
@@ -86,6 +132,18 @@ Public Class Connection
         Dim username As String = txtUsernameCreate.Text
         Dim password As String = txtPasswordCreate.Text
         Dim email As String = txtEmailCreate.Text
+
+        ' Affichage des valeurs des champs pour débogage
+        Debug.WriteLine("Valeur du champ UsernameCreate: '" & username & "'")
+        Debug.WriteLine("Valeur du champ PasswordCreate: '" & password & "'")
+        Debug.WriteLine("Valeur du champ EmailCreate: '" & email & "'")
+
+        ' Vérification des champs de création de compte
+        If Not IsValidInput(username) OrElse Not IsValidInput(password) OrElse Not IsValidInput(email) Then
+            MessageBox.Show("Les champs de texte ne peuvent pas être vides ou contenir des espaces.")
+            Return
+        End If
+
         Dim url As String = "https://musicplayer.creepergreg951.eu/connection.php" ' URL de votre fichier PHP sur le serveur
 
         ' Créez un client HTTP pour envoyer les données au serveur

@@ -45,8 +45,8 @@ Partial Class Connection
         'btnLogin
         '
         Me.btnLogin.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.btnLogin.Location = New System.Drawing.Point(390, 211)
-        Me.btnLogin.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.btnLogin.Location = New System.Drawing.Point(420, 229)
+        Me.btnLogin.Margin = New System.Windows.Forms.Padding(2)
         Me.btnLogin.Name = "btnLogin"
         Me.btnLogin.Size = New System.Drawing.Size(130, 58)
         Me.btnLogin.TabIndex = 0
@@ -56,46 +56,46 @@ Partial Class Connection
         'txtUsername
         '
         Me.txtUsername.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.txtUsername.Location = New System.Drawing.Point(390, 141)
-        Me.txtUsername.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.txtUsername.Location = New System.Drawing.Point(420, 159)
+        Me.txtUsername.Margin = New System.Windows.Forms.Padding(2)
         Me.txtUsername.Name = "txtUsername"
-        Me.txtUsername.Size = New System.Drawing.Size(174, 20)
+        Me.txtUsername.Size = New System.Drawing.Size(174, 22)
         Me.txtUsername.TabIndex = 1
         '
         'txtPassword
         '
         Me.txtPassword.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.txtPassword.Location = New System.Drawing.Point(390, 167)
-        Me.txtPassword.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.txtPassword.Location = New System.Drawing.Point(420, 185)
+        Me.txtPassword.Margin = New System.Windows.Forms.Padding(2)
         Me.txtPassword.Name = "txtPassword"
-        Me.txtPassword.Size = New System.Drawing.Size(174, 20)
+        Me.txtPassword.Size = New System.Drawing.Size(174, 22)
         Me.txtPassword.TabIndex = 2
         Me.txtPassword.UseSystemPasswordChar = True
         '
         'txtPasswordCreate
         '
         Me.txtPasswordCreate.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.txtPasswordCreate.Location = New System.Drawing.Point(75, 152)
-        Me.txtPasswordCreate.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.txtPasswordCreate.Location = New System.Drawing.Point(105, 170)
+        Me.txtPasswordCreate.Margin = New System.Windows.Forms.Padding(2)
         Me.txtPasswordCreate.Name = "txtPasswordCreate"
-        Me.txtPasswordCreate.Size = New System.Drawing.Size(174, 20)
+        Me.txtPasswordCreate.Size = New System.Drawing.Size(174, 22)
         Me.txtPasswordCreate.TabIndex = 5
         Me.txtPasswordCreate.UseSystemPasswordChar = True
         '
         'txtUsernameCreate
         '
         Me.txtUsernameCreate.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.txtUsernameCreate.Location = New System.Drawing.Point(75, 129)
-        Me.txtUsernameCreate.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.txtUsernameCreate.Location = New System.Drawing.Point(105, 147)
+        Me.txtUsernameCreate.Margin = New System.Windows.Forms.Padding(2)
         Me.txtUsernameCreate.Name = "txtUsernameCreate"
-        Me.txtUsernameCreate.Size = New System.Drawing.Size(174, 20)
+        Me.txtUsernameCreate.Size = New System.Drawing.Size(174, 22)
         Me.txtUsernameCreate.TabIndex = 4
         '
         'btnCreateAccount
         '
         Me.btnCreateAccount.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.btnCreateAccount.Location = New System.Drawing.Point(47, 211)
-        Me.btnCreateAccount.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.btnCreateAccount.Location = New System.Drawing.Point(77, 229)
+        Me.btnCreateAccount.Margin = New System.Windows.Forms.Padding(2)
         Me.btnCreateAccount.Name = "btnCreateAccount"
         Me.btnCreateAccount.Size = New System.Drawing.Size(166, 58)
         Me.btnCreateAccount.TabIndex = 3
@@ -105,20 +105,20 @@ Partial Class Connection
         'txtEmailCreate
         '
         Me.txtEmailCreate.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.txtEmailCreate.Location = New System.Drawing.Point(75, 175)
-        Me.txtEmailCreate.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.txtEmailCreate.Location = New System.Drawing.Point(105, 193)
+        Me.txtEmailCreate.Margin = New System.Windows.Forms.Padding(2)
         Me.txtEmailCreate.Name = "txtEmailCreate"
-        Me.txtEmailCreate.Size = New System.Drawing.Size(174, 20)
+        Me.txtEmailCreate.Size = New System.Drawing.Size(174, 22)
         Me.txtEmailCreate.TabIndex = 6
         '
         'Label1
         '
         Me.Label1.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(8, 132)
+        Me.Label1.Location = New System.Drawing.Point(23, 150)
         Me.Label1.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(65, 15)
+        Me.Label1.Size = New System.Drawing.Size(73, 17)
         Me.Label1.TabIndex = 7
         Me.Label1.Text = "Username"
         '
@@ -126,10 +126,10 @@ Partial Class Connection
         '
         Me.Label2.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(10, 154)
+        Me.Label2.Location = New System.Drawing.Point(27, 172)
         Me.Label2.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(61, 15)
+        Me.Label2.Size = New System.Drawing.Size(69, 17)
         Me.Label2.TabIndex = 8
         Me.Label2.Text = "Password"
         '
@@ -137,10 +137,10 @@ Partial Class Connection
         '
         Me.Label3.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(31, 177)
+        Me.Label3.Location = New System.Drawing.Point(48, 195)
         Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(39, 15)
+        Me.Label3.Size = New System.Drawing.Size(42, 17)
         Me.Label3.TabIndex = 9
         Me.Label3.Text = "Email"
         '
@@ -148,10 +148,10 @@ Partial Class Connection
         '
         Me.Label4.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(326, 170)
+        Me.Label4.Location = New System.Drawing.Point(347, 188)
         Me.Label4.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(61, 15)
+        Me.Label4.Size = New System.Drawing.Size(69, 17)
         Me.Label4.TabIndex = 11
         Me.Label4.Text = "Password"
         '
@@ -159,10 +159,10 @@ Partial Class Connection
         '
         Me.Label5.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(322, 141)
+        Me.Label5.Location = New System.Drawing.Point(343, 159)
         Me.Label5.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label5.Name = "Label5"
-        Me.Label5.Size = New System.Drawing.Size(65, 15)
+        Me.Label5.Size = New System.Drawing.Size(73, 17)
         Me.Label5.TabIndex = 10
         Me.Label5.Text = "Username"
         '
@@ -171,7 +171,7 @@ Partial Class Connection
         Me.Label6.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label6.AutoSize = True
         Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 16.2!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label6.Location = New System.Drawing.Point(78, 67)
+        Me.Label6.Location = New System.Drawing.Point(108, 85)
         Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(123, 32)
@@ -183,7 +183,7 @@ Partial Class Connection
         Me.Label7.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label7.AutoSize = True
         Me.Label7.Font = New System.Drawing.Font("Microsoft Sans Serif", 16.2!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(402, 67)
+        Me.Label7.Location = New System.Drawing.Point(432, 85)
         Me.Label7.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(110, 32)
@@ -194,17 +194,18 @@ Partial Class Connection
         '
         Me.Label8.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Label8.AutoSize = True
-        Me.Label8.Location = New System.Drawing.Point(12, 351)
+        Me.Label8.Location = New System.Drawing.Point(11, 388)
         Me.Label8.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label8.Name = "Label8"
-        Me.Label8.Size = New System.Drawing.Size(651, 60)
+        Me.Label8.Size = New System.Drawing.Size(766, 68)
         Me.Label8.TabIndex = 14
         Me.Label8.Text = resources.GetString("Label8.Text")
         '
         'Connection
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
-        Me.ClientSize = New System.Drawing.Size(608, 410)
+        Me.AutoSize = True
+        Me.ClientSize = New System.Drawing.Size(622, 447)
         Me.Controls.Add(Me.Label8)
         Me.Controls.Add(Me.Label7)
         Me.Controls.Add(Me.Label6)
@@ -220,7 +221,7 @@ Partial Class Connection
         Me.Controls.Add(Me.txtPassword)
         Me.Controls.Add(Me.txtUsername)
         Me.Controls.Add(Me.btnLogin)
-        Me.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "Connection"
         Me.Text = "Connection"
         Me.ResumeLayout(False)
