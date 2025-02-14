@@ -177,14 +177,12 @@
     <Compile Include="Connection.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GetMusicData.vb" />
     <Compile Include="MainForm.Designer.vb">
       <DependentUpon>MainForm.vb</DependentUpon>
     </Compile>
     <Compile Include="MainForm.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MusicData.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -202,7 +200,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Playlists.vb" />
-    <Compile Include="SongPlaceholder.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Connection.resx">
