@@ -14,13 +14,10 @@ Public Class MainForm
     Private mediaReader As MediaFoundationReader
     Private currentStream As Stream
     Private karaokeSynth As SpeechSynthesizer
+    Private volumeController As AudioVolumeControls
+
 
     Private isPlaying As Boolean = False
-
-    Private WithEvents currentTimeLabel As Label
-    Private WithEvents totalTimeLabel As Label
-    Private WithEvents remainingTimeLabel As Label
-    Private WithEvents audioTrackBar As TrackBar
     Private audioPlayer As AudioPlayer
 
     Private currentUserID As Integer ' ID de l'utilisateur récupéré du fichier JSON
@@ -41,6 +38,7 @@ Public Class MainForm
         ' Initialisation des composants audio
         waveOut = New WaveOutEvent()
         karaokeSynth = New SpeechSynthesizer()
+        volumeController = New AudioVolumeControls(waveOut)
 
         ' Récupérer l'ID utilisateur à partir du fichier JSON
         currentUserID = GetUserIDFromJson()
@@ -48,16 +46,8 @@ Public Class MainForm
         ' Charger les playlists
         Debug.WriteLine("Chargement des playlists...")
         LoadPlaylists()
-    End Sub
 
-    Public Sub UpdateMusicData(currentPos As Integer, totalPos As Integer)
-        audioPlayer.UpdateMusicProgress(currentPos, totalPos)
-    End Sub
-
-    ' Fonction pour changer la position de la musique avec la TrackBar
-    Private Sub audioTrackBar_Scroll(sender As Object, e As EventArgs) Handles audioTrackBar.Scroll
-        ' Met à jour la position de la musique selon la valeur de la TrackBar
-        audioPlayer.UpdateMusicProgress(audioTrackBar.Value, audioTrackBar.Maximum)
+        Connection.Hide()
     End Sub
 
     Private Sub LoadPlaylists()
@@ -281,7 +271,7 @@ Public Class MainForm
                 Debug.WriteLine("Lecture du flux audio à partir de l'URL: " & musicLink)
 
                 ' Arrêter le lecteur précédent si nécessaire
-                If waveOut.PlaybackState = PlaybackState.Playing Then
+                If waveOut IsNot Nothing AndAlso waveOut.PlaybackState = PlaybackState.Playing Then
                     waveOut.Stop()
                 End If
 
@@ -407,6 +397,22 @@ Public Class MainForm
     End Function
 
     Private Sub MainForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Timer1.Interval = 100 ' Vérifie toutes les 100ms
+        Timer1.Start()
+    End Sub
 
+    Private previousValue As Integer = -1 ' Stocke la dernière valeur connue
+
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+        Dim currentValue As Integer = ModernTrackBar2.Value
+
+        If currentValue <> previousValue Then
+            ' Normalisez la valeur et ajustez le volume
+            Dim normalizedVolume As Single = currentValue / 100.0F
+            volumeController.SetVolume(normalizedVolume)
+
+            ' Mettez à jour la dernière valeur connue
+            previousValue = currentValue
+        End If
     End Sub
 End Class

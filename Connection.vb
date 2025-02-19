@@ -50,13 +50,12 @@ Public Class Connection
             Dim jsonUserInfo As JObject = JObject.Parse(userInfo)
 
             ' Display user info or proceed to main form
-            MessageBox.Show("User Info: " & jsonUserInfo.ToString())
+            ' MessageBox.Show("User Info: " & jsonUserInfo.ToString())
 
             ' Redirect to MainForm
-            Dim mainForm As New MainForm()
-            mainForm.Show()
-            Me.Hide() ' Optionally hide the current form
+            MainForm.Show()
         End If
+        Me.Hide()
     End Sub
 
     Private Async Sub btnLogin_Click(sender As Object, e As EventArgs) Handles btnLogin.Click

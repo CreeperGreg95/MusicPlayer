@@ -223,6 +223,7 @@ Partial Class Connection
         Me.Controls.Add(Me.btnLogin)
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "Connection"
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Connection"
         Me.ResumeLayout(False)
         Me.PerformLayout()
