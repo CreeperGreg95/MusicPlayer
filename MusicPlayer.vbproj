@@ -181,12 +181,15 @@
     <Compile Include="Connection.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ConnectionAccount.vb" />
     <Compile Include="MainForm.Designer.vb">
       <DependentUpon>MainForm.vb</DependentUpon>
     </Compile>
     <Compile Include="MainForm.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="MusicController.vb" />
+    <Compile Include="MusicTime.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>

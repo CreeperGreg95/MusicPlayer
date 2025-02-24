@@ -36,6 +36,7 @@ Partial Class MainForm
         Me.FlowLayoutMusicPanel = New System.Windows.Forms.FlowLayoutPanel()
         Me.MySqlCommand1 = New MySql.Data.MySqlClient.MySqlCommand()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
+        Me.CurrentMusicDuration = New System.Windows.Forms.Label()
         Me.Panel2.SuspendLayout()
         Me.playerControls.SuspendLayout()
         Me.SuspendLayout()
@@ -73,6 +74,7 @@ Partial Class MainForm
         '
         Me.playerControls.Anchor = CType(((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.playerControls.Controls.Add(Me.CurrentMusicDuration)
         Me.playerControls.Controls.Add(Me.ModernTrackBar2)
         Me.playerControls.Controls.Add(Me.ModernTrackBar1)
         Me.playerControls.Controls.Add(Me.btnNext)
@@ -86,8 +88,7 @@ Partial Class MainForm
         '
         'ModernTrackBar2
         '
-        Me.ModernTrackBar2.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ModernTrackBar2.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ModernTrackBar2.Location = New System.Drawing.Point(863, 29)
         Me.ModernTrackBar2.Maximum = 100
         Me.ModernTrackBar2.Minimum = 0
@@ -100,11 +101,11 @@ Partial Class MainForm
         '
         Me.ModernTrackBar1.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.ModernTrackBar1.Location = New System.Drawing.Point(241, 44)
+        Me.ModernTrackBar1.Location = New System.Drawing.Point(304, 44)
         Me.ModernTrackBar1.Maximum = 100
         Me.ModernTrackBar1.Minimum = 0
         Me.ModernTrackBar1.Name = "ModernTrackBar1"
-        Me.ModernTrackBar1.Size = New System.Drawing.Size(494, 30)
+        Me.ModernTrackBar1.Size = New System.Drawing.Size(370, 30)
         Me.ModernTrackBar1.TabIndex = 4
         Me.ModernTrackBar1.Value = 0
         '
@@ -166,6 +167,19 @@ Partial Class MainForm
         Me.MySqlCommand1.EnableCaching = False
         Me.MySqlCommand1.Transaction = Nothing
         '
+        'Timer1
+        '
+        '
+        'CurrentMusicDuration
+        '
+        Me.CurrentMusicDuration.Anchor = System.Windows.Forms.AnchorStyles.Right
+        Me.CurrentMusicDuration.AutoSize = True
+        Me.CurrentMusicDuration.Location = New System.Drawing.Point(681, 51)
+        Me.CurrentMusicDuration.Name = "CurrentMusicDuration"
+        Me.CurrentMusicDuration.Size = New System.Drawing.Size(44, 17)
+        Me.CurrentMusicDuration.TabIndex = 6
+        Me.CurrentMusicDuration.Text = "00:00"
+        '
         'MainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
@@ -177,13 +191,13 @@ Partial Class MainForm
         Me.Controls.Add(Me.playerControls)
         Me.Controls.Add(Me.Panel2)
         Me.Controls.Add(Me.sidebar)
-        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "MainForm"
         Me.Text = "MainForm"
         Me.Panel2.ResumeLayout(False)
         Me.Panel2.PerformLayout()
         Me.playerControls.ResumeLayout(False)
+        Me.playerControls.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -201,4 +215,5 @@ Partial Class MainForm
     Friend WithEvents ModernTrackBar2 As ModernTrackbar.ModernTrackBar
     Friend WithEvents MySqlCommand1 As MySql.Data.MySqlClient.MySqlCommand
     Friend WithEvents Timer1 As Timer
+    Friend WithEvents CurrentMusicDuration As Label
 End Class

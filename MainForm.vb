@@ -1,25 +1,12 @@
-﻿Imports MySql.Data.MySqlClient
-Imports System.IO
+﻿Imports System.IO
 Imports System.Net.Http
-Imports NAudio.Wave
-Imports System.Speech.Synthesis
-Imports System.Windows.Forms
-Imports System.Diagnostics
 Imports Newtonsoft.Json.Linq
 Imports System.Net
+Imports MySql.Data.MySqlClient
 
 Public Class MainForm
     Inherits Form
-    Private waveOut As WaveOutEvent
-    Private mediaReader As MediaFoundationReader
-    Private currentStream As Stream
-    Private karaokeSynth As SpeechSynthesizer
-    Private volumeController As AudioVolumeControls
-
-
-    Private isPlaying As Boolean = False
-    Private audioPlayer As AudioPlayer
-
+    Private musicController As MusicController
     Private currentUserID As Integer ' ID de l'utilisateur récupéré du fichier JSON
     Private offlineMode As Boolean = False
     Private connectionString As String = "Server=srv1049.hstgr.io;Database=u842356047_musicplayerdb;User Id=u842356047_gregcreeper95;Password=Minecraft0711@@@!!!;"
@@ -35,17 +22,20 @@ Public Class MainForm
         FlowLayoutMusicPanel.WrapContents = True
         FlowLayoutMusicPanel.FlowDirection = FlowDirection.LeftToRight
 
-        ' Initialisation des composants audio
-        waveOut = New WaveOutEvent()
-        karaokeSynth = New SpeechSynthesizer()
-        volumeController = New AudioVolumeControls(waveOut)
-
         ' Récupérer l'ID utilisateur à partir du fichier JSON
-        currentUserID = GetUserIDFromJson()
+        Dim connectionAccount As New ConnectionAccount()
+        currentUserID = connectionAccount.GetUserIDFromJson()
+
+        ' Initialisation du contrôleur de musique avec currentUserID
+        musicController = New MusicController(currentUserID)
 
         ' Charger les playlists
         Debug.WriteLine("Chargement des playlists...")
         LoadPlaylists()
+
+        ' Calculer et afficher la durée totale de la musique
+        Dim musicTime As New MusicTime()
+        CurrentMusicDuration.Text = "Durée totale : " & musicTime.CalculateTotalDuration()
 
         Connection.Hide()
     End Sub
@@ -54,33 +44,6 @@ Public Class MainForm
         ' Fonction pour charger les playlists, ici seulement un exemple
         Debug.WriteLine("Chargement des playlists...")
     End Sub
-
-    Private Function GetMusicLink(songName As String) As String
-        Try
-            Debug.WriteLine("Recherche du lien de la chanson: " & songName)
-            Using conn As New MySqlConnection(connectionString)
-                conn.Open()
-                Dim query As String = "SELECT MusicLink FROM Musics WHERE MusicName = @MusicName"
-                Debug.WriteLine("Requête SQL: " & query)
-                Dim cmd As New MySqlCommand(query, conn)
-                cmd.Parameters.AddWithValue("@MusicName", songName)
-                Dim link As Object = cmd.ExecuteScalar()
-                If link IsNot Nothing Then
-                    Debug.WriteLine("Lien trouvé: " & link.ToString())
-                    Return link.ToString()
-                Else
-                    Debug.WriteLine("Aucun lien trouvé pour cette chanson.")
-                End If
-            End Using
-        Catch ex As MySqlException
-            Debug.WriteLine("Erreur MySQL: " & ex.Message)
-            MessageBox.Show("Erreur de connexion ou de requête MySQL: " & ex.Message)
-        Catch ex As Exception
-            Debug.WriteLine("Erreur générale: " & ex.Message)
-            MessageBox.Show("Erreur générale: " & ex.Message)
-        End Try
-        Return String.Empty
-    End Function
 
     ' Fonction pour créer dynamiquement un panneau pour chaque musique
     Private Function CreateMusicPanel(imageUrl As String, songName As String, artist As String, album As String, totalListens As Integer, personalListens As Integer) As Panel
@@ -171,31 +134,17 @@ Public Class MainForm
     End Function
 
     Private Sub btnPlay_Click(sender As Object, e As EventArgs) Handles btnPlay.Click
-        ' Si la musique est déjà en cours de lecture, on ne fait rien
-        If Not isPlaying Then
-            Debug.WriteLine("Lecture de la musique en cours...")
-            waveOut.Play() ' Démarrer la lecture
-            isPlaying = True
-
-            audioPlayer.TogglePlayPause()
-            ' Mettre à jour l'état des boutons
-            btnPlay.Enabled = False ' Désactiver le bouton Play
-            btnPause.Enabled = True ' Activer le bouton Pause
-        End If
+        musicController.TogglePlayPause()
+        ' Mettre à jour l'état des boutons
+        btnPlay.Enabled = False ' Désactiver le bouton Play
+        btnPause.Enabled = True ' Activer le bouton Pause
     End Sub
 
     Private Sub btnPause_Click(sender As Object, e As EventArgs) Handles btnPause.Click
-        ' Si la musique est en cours de lecture, on la met en pause
-        If isPlaying Then
-            Debug.WriteLine("Mise en pause de la musique...")
-            waveOut.Pause() ' Mettre la lecture en pause
-            isPlaying = False
-
-            audioPlayer.TogglePlayPause()
-            ' Mettre à jour l'état des boutons
-            btnPlay.Enabled = True ' Activer le bouton Play
-            btnPause.Enabled = False ' Désactiver le bouton Pause
-        End If
+        musicController.TogglePlayPause()
+        ' Mettre à jour l'état des boutons
+        btnPlay.Enabled = True ' Activer le bouton Play
+        btnPause.Enabled = False ' Désactiver le bouton Pause
     End Sub
 
     Private Sub SearchBox_TextChanged(sender As Object, e As EventArgs) Handles searchBox.TextChanged
@@ -225,7 +174,6 @@ Public Class MainForm
                         "LEFT JOIN UserMusicListenCount l ON m.MusicID = l.MusicID AND l.UserID = @UserID " &
                         "LEFT JOIN Albums a ON m.AlbumID = a.AlbumID " &
                         "WHERE m.MusicName LIKE @SearchQuery"
-
 
                 Dim cmd As New MySqlCommand(query, conn)
                 cmd.Parameters.AddWithValue("@SearchQuery", "%" & searchQuery & "%")
@@ -257,144 +205,16 @@ Public Class MainForm
         If clickedControl.Tag IsNot Nothing Then
             Dim songName As String = clickedControl.Tag.ToString() ' Récupère le nom de la chanson
             Debug.WriteLine("Lecture de la chanson sélectionnée: " & songName)
-            PlaySong(songName) ' Appelle la fonction de lecture
+            musicController.PlaySong(songName) ' Appelle la fonction de lecture
+
+            ' Afficher la durée de la musique sélectionnée
+            Dim musicTime As New MusicTime()
+            Dim duration As String = musicTime.GetMusicDuration(songName)
+            CurrentMusicDuration.Text = duration
         Else
             Debug.WriteLine("Le contrôle cliqué n'a pas de Tag défini.")
         End If
     End Sub
-
-    Private Sub PlaySong(songName As String)
-        Dim musicLink As String = GetMusicLink(songName)
-
-        If Not String.IsNullOrEmpty(musicLink) Then
-            Try
-                Debug.WriteLine("Lecture du flux audio à partir de l'URL: " & musicLink)
-
-                ' Arrêter le lecteur précédent si nécessaire
-                If waveOut IsNot Nothing AndAlso waveOut.PlaybackState = PlaybackState.Playing Then
-                    waveOut.Stop()
-                End If
-
-                ' Créer un lecteur audio pour le streaming
-                mediaReader = New MediaFoundationReader(musicLink)
-
-                ' Connecter le lecteur audio à l'output
-                waveOut.Init(mediaReader)
-
-                ' Démarrer la lecture
-                waveOut.Play()
-                Debug.WriteLine("Lecture démarrée")
-
-                ' Mettre à jour les compteurs d'écoutes
-                UpdateListenCounters(songName)
-
-            Catch ex As Exception
-                Debug.WriteLine("Erreur lors de la lecture de la musique: " & ex.Message)
-                MessageBox.Show("Erreur lors de la lecture de la musique: " & ex.Message)
-            End Try
-        Else
-            MessageBox.Show("Aucun lien de musique trouvé.")
-        End If
-    End Sub
-    Private Sub UpdateListenCounters(songName As String)
-        Try
-            Debug.WriteLine("Mise à jour des compteurs d'écoutes...")
-
-            Using conn As New MySqlConnection(connectionString)
-                conn.Open()
-
-                ' Vérifier si la table UserMusicListenCount existe, sinon la créer
-                Dim checkTableQuery As String = "
-            CREATE TABLE IF NOT EXISTS UserMusicListenCount (
-                UserID INT NOT NULL,
-                MusicID INT NOT NULL,
-                ListenCount INT DEFAULT 0,
-                PRIMARY KEY (UserID, MusicID),
-                FOREIGN KEY (UserID) REFERENCES Users(UserID),
-                FOREIGN KEY (MusicID) REFERENCES Musics(MusicID)
-            );"
-                Dim checkTableCmd As New MySqlCommand(checkTableQuery, conn)
-                checkTableCmd.ExecuteNonQuery()
-                Debug.WriteLine("Table 'UserMusicListenCount' vérifiée et créée si nécessaire.")
-
-                ' Récupérer l'ID de la musique
-                Dim musicIDQuery As String = "SELECT MusicID FROM Musics WHERE MusicName = @SongName"
-                Dim musicIDCmd As New MySqlCommand(musicIDQuery, conn)
-                musicIDCmd.Parameters.AddWithValue("@SongName", songName)
-                Dim musicID As Object = musicIDCmd.ExecuteScalar()
-
-                ' Vérifier si un MusicID a été trouvé
-                If musicID IsNot Nothing Then
-                    Debug.WriteLine("ID de la musique trouvée : " & musicID.ToString())
-
-                    ' Vérifier si l'enregistrement existe pour l'utilisateur et la musique
-                    Dim checkRecordQuery As String = "SELECT ListenCount FROM UserMusicListenCount WHERE UserID = @UserID AND MusicID = @MusicID"
-                    Dim checkRecordCmd As New MySqlCommand(checkRecordQuery, conn)
-                    checkRecordCmd.Parameters.AddWithValue("@UserID", currentUserID)
-                    checkRecordCmd.Parameters.AddWithValue("@MusicID", musicID)
-
-                    Dim existingCount As Object = checkRecordCmd.ExecuteScalar()
-
-                    If existingCount IsNot Nothing Then
-                        ' Si l'enregistrement existe, mettre à jour le compteur
-                        Debug.WriteLine("Enregistrement trouvé. Mise à jour du compteur.")
-                        Dim updateQuery As String = "UPDATE UserMusicListenCount SET ListenCount = ListenCount + 1 WHERE UserID = @UserID AND MusicID = @MusicID"
-                        Dim updateCmd As New MySqlCommand(updateQuery, conn)
-                        updateCmd.Parameters.AddWithValue("@UserID", currentUserID)
-                        updateCmd.Parameters.AddWithValue("@MusicID", musicID)
-                        updateCmd.ExecuteNonQuery()
-                        Debug.WriteLine("Compteur mis à jour.")
-                    Else
-                        ' Si l'enregistrement n'existe pas, l'ajouter avec une valeur de compteur initiale de 1
-                        Debug.WriteLine("Enregistrement non trouvé. Insertion du nouveau compteur.")
-                        Dim insertQuery As String = "INSERT INTO UserMusicListenCount (UserID, MusicID, ListenCount) VALUES (@UserID, @MusicID, 1)"
-                        Dim insertCmd As New MySqlCommand(insertQuery, conn)
-                        insertCmd.Parameters.AddWithValue("@UserID", currentUserID)
-                        insertCmd.Parameters.AddWithValue("@MusicID", musicID)
-                        insertCmd.ExecuteNonQuery()
-                        Debug.WriteLine("Compteur initialisé à 1.")
-                    End If
-
-                    ' Mettre à jour le compteur global des écoutes dans la table Musics
-                    Dim updateGlobalCountQuery As String = "UPDATE Musics SET ListenedCounter = ListenedCounter + 1 WHERE MusicID = @MusicID"
-                    Dim updateGlobalCountCmd As New MySqlCommand(updateGlobalCountQuery, conn)
-                    updateGlobalCountCmd.Parameters.AddWithValue("@MusicID", musicID)
-                    updateGlobalCountCmd.ExecuteNonQuery()
-                    Debug.WriteLine("Compteur global des écoutes mis à jour.")
-                Else
-                    Debug.WriteLine("Aucun MusicID trouvé pour la chanson : " & songName)
-                End If
-            End Using
-
-            Debug.WriteLine("Compteurs mis à jour avec succès.")
-        Catch ex As Exception
-            Debug.WriteLine("Erreur lors de la mise à jour des compteurs: " & ex.Message)
-            MessageBox.Show("Erreur lors de la mise à jour des compteurs: " & ex.Message)
-        End Try
-    End Sub
-
-    Private Function GetUserIDFromJson() As Integer
-        ' Charger le fichier JSON contenant l'ID de l'utilisateur depuis ApplicationData
-        Dim userInfoFile As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MusicPlayer", "userinfo")
-
-        If File.Exists(userInfoFile) Then
-            ' Lire le contenu du fichier JSON
-            Dim jsonData As String = File.ReadAllText(userInfoFile)
-
-            ' Utiliser Newtonsoft.Json pour analyser le contenu JSON
-            Dim jsonObject As JObject = JObject.Parse(jsonData)
-
-            ' Extraire l'ID de l'utilisateur (UserID)
-            Dim userID As Integer = jsonObject("UserID").Value(Of Integer)()
-
-            ' Retourner l'ID de l'utilisateur
-            Return userID
-        Else
-            ' Si le fichier JSON n'existe pas, afficher une erreur ou retourner 0
-            MessageBox.Show("Le fichier userinfo est introuvable.")
-            Return 0 ' Valeur par défaut si le fichier n'est pas trouvé
-        End If
-    End Function
 
     Private Sub MainForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Timer1.Interval = 100 ' Vérifie toutes les 100ms
@@ -409,7 +229,7 @@ Public Class MainForm
         If currentValue <> previousValue Then
             ' Normalisez la valeur et ajustez le volume
             Dim normalizedVolume As Single = currentValue / 100.0F
-            volumeController.SetVolume(normalizedVolume)
+            musicController.SetVolume(normalizedVolume)
 
             ' Mettez à jour la dernière valeur connue
             previousValue = currentValue
