@@ -9,31 +9,42 @@ Public Class MusicController
     Private currentStream As Stream
     Private karaokeSynth As SpeechSynthesizer
     Private volumeController As AudioVolumeControls
-    Private currentUserID As Integer
     Private connectionString As String = "Server=srv1049.hstgr.io;Database=u842356047_musicplayerdb;User Id=u842356047_gregcreeper95;Password=Minecraft0711@@@!!!;"
+    Private currentUserID As Integer
 
-    Public Sub New(userID As Integer)
+    Public Sub New(userID As Integer, volumeControl As ModernTrackbar.ModernTrackbar_TheSecondOff.VolumeTrackbar)
         waveOut = New WaveOutEvent()
         karaokeSynth = New SpeechSynthesizer()
-        volumeController = New AudioVolumeControls(waveOut)
+        volumeController = New AudioVolumeControls(waveOut, volumeControl)
         currentUserID = userID
     End Sub
 
+    Public Function GetWaveOut() As WaveOutEvent
+        Return waveOut
+    End Function
+
     Public Function GetMusicLink(songName As String) As String
         Try
+            Debug.WriteLine("Recherche du lien de la chanson: " & songName)
             Using conn As New MySqlConnection(connectionString)
                 conn.Open()
                 Dim query As String = "SELECT MusicLink FROM Musics WHERE MusicName = @MusicName"
+                Debug.WriteLine("Requête SQL: " & query)
                 Dim cmd As New MySqlCommand(query, conn)
                 cmd.Parameters.AddWithValue("@MusicName", songName)
                 Dim link As Object = cmd.ExecuteScalar()
                 If link IsNot Nothing Then
+                    Debug.WriteLine("Lien trouvé: " & link.ToString())
                     Return link.ToString()
+                Else
+                    Debug.WriteLine("Aucun lien trouvé pour cette chanson.")
                 End If
             End Using
         Catch ex As MySqlException
+            Debug.WriteLine("Erreur MySQL: " & ex.Message)
             MessageBox.Show("Erreur de connexion ou de requête MySQL: " & ex.Message)
         Catch ex As Exception
+            Debug.WriteLine("Erreur générale: " & ex.Message)
             MessageBox.Show("Erreur générale: " & ex.Message)
         End Try
         Return String.Empty
@@ -44,6 +55,8 @@ Public Class MusicController
 
         If Not String.IsNullOrEmpty(musicLink) Then
             Try
+                Debug.WriteLine("Lecture du flux audio à partir de l'URL: " & musicLink)
+
                 ' Arrêter le lecteur précédent si nécessaire
                 If waveOut IsNot Nothing AndAlso waveOut.PlaybackState = PlaybackState.Playing Then
                     waveOut.Stop()
@@ -57,11 +70,13 @@ Public Class MusicController
 
                 ' Démarrer la lecture
                 waveOut.Play()
+                Debug.WriteLine("Lecture démarrée")
 
                 ' Mettre à jour les compteurs d'écoutes
                 UpdateListenCounters(songName)
 
             Catch ex As Exception
+                Debug.WriteLine("Erreur lors de la lecture de la musique: " & ex.Message)
                 MessageBox.Show("Erreur lors de la lecture de la musique: " & ex.Message)
             End Try
         Else
@@ -87,17 +102,6 @@ Public Class MusicController
                 Dim checkTableCmd As New MySqlCommand(checkTableQuery, conn)
                 checkTableCmd.ExecuteNonQuery()
 
-                ' Vérifier si le UserID existe dans la table Users
-                Dim checkUserQuery As String = "SELECT COUNT(*) FROM Users WHERE UserID = @UserID"
-                Dim checkUserCmd As New MySqlCommand(checkUserQuery, conn)
-                checkUserCmd.Parameters.AddWithValue("@UserID", currentUserID)
-                Dim userExists As Integer = Convert.ToInt32(checkUserCmd.ExecuteScalar())
-
-                If userExists = 0 Then
-                    MessageBox.Show("UserID inexistant dans la table Users.")
-                    Return
-                End If
-
                 ' Récupérer l'ID de la musique
                 Dim musicIDQuery As String = "SELECT MusicID FROM Musics WHERE MusicName = @SongName"
                 Dim musicIDCmd As New MySqlCommand(musicIDQuery, conn)
@@ -106,6 +110,8 @@ Public Class MusicController
 
                 ' Vérifier si un MusicID a été trouvé
                 If musicID IsNot Nothing Then
+                    Debug.WriteLine("ID de la musique trouvée : " & musicID.ToString())
+
                     ' Vérifier si l'enregistrement existe pour l'utilisateur et la musique
                     Dim checkRecordQuery As String = "SELECT ListenCount FROM UserMusicListenCount WHERE UserID = @UserID AND MusicID = @MusicID"
                     Dim checkRecordCmd As New MySqlCommand(checkRecordQuery, conn)
@@ -116,6 +122,7 @@ Public Class MusicController
 
                     If existingCount IsNot Nothing Then
                         ' Si l'enregistrement existe, mettre à jour le compteur
+                        Debug.WriteLine("Enregistrement trouvé. Mise à jour du compteur.")
                         Dim updateQuery As String = "UPDATE UserMusicListenCount SET ListenCount = ListenCount + 1 WHERE UserID = @UserID AND MusicID = @MusicID"
                         Dim updateCmd As New MySqlCommand(updateQuery, conn)
                         updateCmd.Parameters.AddWithValue("@UserID", currentUserID)
@@ -123,6 +130,7 @@ Public Class MusicController
                         updateCmd.ExecuteNonQuery()
                     Else
                         ' Si l'enregistrement n'existe pas, l'ajouter avec une valeur de compteur initiale de 1
+                        Debug.WriteLine("Enregistrement non trouvé. Insertion du nouveau compteur.")
                         Dim insertQuery As String = "INSERT INTO UserMusicListenCount (UserID, MusicID, ListenCount) VALUES (@UserID, @MusicID, 1)"
                         Dim insertCmd As New MySqlCommand(insertQuery, conn)
                         insertCmd.Parameters.AddWithValue("@UserID", currentUserID)
@@ -138,6 +146,7 @@ Public Class MusicController
                 End If
             End Using
         Catch ex As Exception
+            Debug.WriteLine("Erreur lors de la mise à jour des compteurs: " & ex.Message)
             MessageBox.Show("Erreur lors de la mise à jour des compteurs: " & ex.Message)
         End Try
     End Sub

@@ -3,10 +3,14 @@ Imports System.Net.Http
 Imports Newtonsoft.Json.Linq
 Imports System.Net
 Imports MySql.Data.MySqlClient
+Imports ModernTrackbar
 
 Public Class MainForm
     Inherits Form
     Private musicController As MusicController
+    Private musicControls As MusicControls
+    Private audioVolumeControls As AudioVolumeControls
+    Private tooltipsApp As TooltipsApp
     Private currentUserID As Integer ' ID de l'utilisateur récupéré du fichier JSON
     Private offlineMode As Boolean = False
     Private connectionString As String = "Server=srv1049.hstgr.io;Database=u842356047_musicplayerdb;User Id=u842356047_gregcreeper95;Password=Minecraft0711@@@!!!;"
@@ -17,26 +21,24 @@ Public Class MainForm
         Me.Text = "Music Player"
         Me.StartPosition = FormStartPosition.CenterScreen
 
-        ' Configuration du FlowLayoutPanel présent dans la Form
         FlowLayoutMusicPanel.AutoScroll = True
         FlowLayoutMusicPanel.WrapContents = True
         FlowLayoutMusicPanel.FlowDirection = FlowDirection.LeftToRight
 
-        ' Récupérer l'ID utilisateur à partir du fichier JSON
         Dim connectionAccount As New ConnectionAccount()
         currentUserID = connectionAccount.GetUserIDFromJson()
 
-        ' Initialisation du contrôleur de musique avec currentUserID
-        musicController = New MusicController(currentUserID)
+        musicController = New MusicController(currentUserID, Me.VolumeTrackbar)
+        musicControls = New MusicControls(musicController, btnPlayPause, btnPrev, btnNext)
+        ' Correction ici, en s'assurant de passer VolumeTrackbar
+        audioVolumeControls = New AudioVolumeControls(musicController.GetWaveOut(), VolumeTrackbar)
 
-        ' Charger les playlists
-        Debug.WriteLine("Chargement des playlists...")
+        ' 👇 Ajout pour initialiser le tooltip et volume au démarrage
+        audioVolumeControls.UpdateTooltip()
+
+        tooltipsApp = New TooltipsApp()
         LoadPlaylists()
-
-        ' Calculer et afficher la durée totale de la musique
-        Dim musicTime As New MusicTime()
-        CurrentMusicDuration.Text = "Durée totale : " & musicTime.CalculateTotalDuration()
-
+        CurrentMusicDuration.Text = "00:00"
         Connection.Hide()
     End Sub
 
@@ -70,7 +72,7 @@ Public Class MainForm
                         musicPicture.Image = Image.FromStream(ms)
                     End Using
                 Else
-                    ' Sinon, chargez depuis un fichier local
+                    ' Sinon, charger depuis un fichier local
                     musicPicture.Image = Image.FromFile(imageUrl)
                 End If
             Catch ex As Exception
@@ -132,20 +134,6 @@ Public Class MainForm
         ' Retourner le panneau
         Return musicPanel
     End Function
-
-    Private Sub btnPlay_Click(sender As Object, e As EventArgs) Handles btnPlay.Click
-        musicController.TogglePlayPause()
-        ' Mettre à jour l'état des boutons
-        btnPlay.Enabled = False ' Désactiver le bouton Play
-        btnPause.Enabled = True ' Activer le bouton Pause
-    End Sub
-
-    Private Sub btnPause_Click(sender As Object, e As EventArgs) Handles btnPause.Click
-        musicController.TogglePlayPause()
-        ' Mettre à jour l'état des boutons
-        btnPlay.Enabled = True ' Activer le bouton Play
-        btnPause.Enabled = False ' Désactiver le bouton Pause
-    End Sub
 
     Private Sub SearchBox_TextChanged(sender As Object, e As EventArgs) Handles searchBox.TextChanged
         If searchBox.Text.Length >= 3 Then
@@ -213,26 +201,6 @@ Public Class MainForm
             CurrentMusicDuration.Text = duration
         Else
             Debug.WriteLine("Le contrôle cliqué n'a pas de Tag défini.")
-        End If
-    End Sub
-
-    Private Sub MainForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Timer1.Interval = 100 ' Vérifie toutes les 100ms
-        Timer1.Start()
-    End Sub
-
-    Private previousValue As Integer = -1 ' Stocke la dernière valeur connue
-
-    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
-        Dim currentValue As Integer = ModernTrackBar2.Value
-
-        If currentValue <> previousValue Then
-            ' Normalisez la valeur et ajustez le volume
-            Dim normalizedVolume As Single = currentValue / 100.0F
-            musicController.SetVolume(normalizedVolume)
-
-            ' Mettez à jour la dernière valeur connue
-            previousValue = currentValue
         End If
     End Sub
 End Class

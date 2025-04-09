@@ -27,16 +27,15 @@ Partial Class MainForm
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.searchBox = New System.Windows.Forms.TextBox()
         Me.playerControls = New System.Windows.Forms.Panel()
-        Me.ModernTrackBar2 = New ModernTrackbar.ModernTrackBar()
-        Me.ModernTrackBar1 = New ModernTrackbar.ModernTrackBar()
+        Me.VolumeTrackbar = New ModernTrackbar.ModernTrackbar_TheSecondOff.VolumeTrackbar()
+        Me.ModernTrackBar2 = New ModernTrackbar.ModernTrackbar_TheSecondOff.ModernTrackBar()
+        Me.btnPlayPause = New System.Windows.Forms.Button()
+        Me.CurrentMusicDuration = New System.Windows.Forms.Label()
         Me.btnNext = New System.Windows.Forms.Button()
         Me.btnPrev = New System.Windows.Forms.Button()
-        Me.btnPause = New System.Windows.Forms.Button()
-        Me.btnPlay = New System.Windows.Forms.Button()
         Me.FlowLayoutMusicPanel = New System.Windows.Forms.FlowLayoutPanel()
         Me.MySqlCommand1 = New MySql.Data.MySqlClient.MySqlCommand()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
-        Me.CurrentMusicDuration = New System.Windows.Forms.Label()
         Me.Panel2.SuspendLayout()
         Me.playerControls.SuspendLayout()
         Me.SuspendLayout()
@@ -74,47 +73,68 @@ Partial Class MainForm
         '
         Me.playerControls.Anchor = CType(((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.playerControls.Controls.Add(Me.CurrentMusicDuration)
+        Me.playerControls.Controls.Add(Me.VolumeTrackbar)
         Me.playerControls.Controls.Add(Me.ModernTrackBar2)
-        Me.playerControls.Controls.Add(Me.ModernTrackBar1)
+        Me.playerControls.Controls.Add(Me.btnPlayPause)
+        Me.playerControls.Controls.Add(Me.CurrentMusicDuration)
         Me.playerControls.Controls.Add(Me.btnNext)
         Me.playerControls.Controls.Add(Me.btnPrev)
-        Me.playerControls.Controls.Add(Me.btnPause)
-        Me.playerControls.Controls.Add(Me.btnPlay)
         Me.playerControls.Location = New System.Drawing.Point(1, 562)
         Me.playerControls.Name = "playerControls"
         Me.playerControls.Size = New System.Drawing.Size(981, 85)
         Me.playerControls.TabIndex = 2
         '
+        'VolumeTrackbar
+        '
+        Me.VolumeTrackbar.Location = New System.Drawing.Point(830, 44)
+        Me.VolumeTrackbar.Maximum = 100
+        Me.VolumeTrackbar.Minimum = 0
+        Me.VolumeTrackbar.Name = "VolumeTrackbar"
+        Me.VolumeTrackbar.Size = New System.Drawing.Size(135, 31)
+        Me.VolumeTrackbar.TabIndex = 10
+        Me.VolumeTrackbar.Text = "VolumeTrackbar1"
+        Me.VolumeTrackbar.Value = 50
+        '
         'ModernTrackBar2
         '
-        Me.ModernTrackBar2.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.ModernTrackBar2.Location = New System.Drawing.Point(863, 29)
+        Me.ModernTrackBar2.BorderColor = System.Drawing.Color.Gray
+        Me.ModernTrackBar2.Location = New System.Drawing.Point(288, 44)
         Me.ModernTrackBar2.Maximum = 100
         Me.ModernTrackBar2.Minimum = 0
         Me.ModernTrackBar2.Name = "ModernTrackBar2"
-        Me.ModernTrackBar2.Size = New System.Drawing.Size(102, 30)
-        Me.ModernTrackBar2.TabIndex = 5
+        Me.ModernTrackBar2.Size = New System.Drawing.Size(387, 31)
+        Me.ModernTrackBar2.TabIndex = 9
+        Me.ModernTrackBar2.Text = "ModernTrackBar2"
+        Me.ModernTrackBar2.ThumbColor = System.Drawing.Color.White
+        Me.ModernTrackBar2.TrackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(152, Byte), Integer), CType(CType(219, Byte), Integer))
         Me.ModernTrackBar2.Value = 0
         '
-        'ModernTrackBar1
+        'btnPlayPause
         '
-        Me.ModernTrackBar1.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.ModernTrackBar1.Location = New System.Drawing.Point(304, 44)
-        Me.ModernTrackBar1.Maximum = 100
-        Me.ModernTrackBar1.Minimum = 0
-        Me.ModernTrackBar1.Name = "ModernTrackBar1"
-        Me.ModernTrackBar1.Size = New System.Drawing.Size(370, 30)
-        Me.ModernTrackBar1.TabIndex = 4
-        Me.ModernTrackBar1.Value = 0
+        Me.btnPlayPause.Anchor = System.Windows.Forms.AnchorStyles.Top
+        Me.btnPlayPause.Location = New System.Drawing.Point(473, 6)
+        Me.btnPlayPause.Name = "btnPlayPause"
+        Me.btnPlayPause.Size = New System.Drawing.Size(40, 32)
+        Me.btnPlayPause.TabIndex = 7
+        Me.btnPlayPause.Text = "▶️"
+        Me.btnPlayPause.UseVisualStyleBackColor = True
+        '
+        'CurrentMusicDuration
+        '
+        Me.CurrentMusicDuration.Anchor = System.Windows.Forms.AnchorStyles.Right
+        Me.CurrentMusicDuration.AutoSize = True
+        Me.CurrentMusicDuration.Location = New System.Drawing.Point(681, 51)
+        Me.CurrentMusicDuration.Name = "CurrentMusicDuration"
+        Me.CurrentMusicDuration.Size = New System.Drawing.Size(44, 17)
+        Me.CurrentMusicDuration.TabIndex = 6
+        Me.CurrentMusicDuration.Text = "00:00"
         '
         'btnNext
         '
         Me.btnNext.Anchor = System.Windows.Forms.AnchorStyles.Top
-        Me.btnNext.Location = New System.Drawing.Point(538, 7)
+        Me.btnNext.Location = New System.Drawing.Point(518, 7)
         Me.btnNext.Name = "btnNext"
-        Me.btnNext.Size = New System.Drawing.Size(40, 32)
+        Me.btnNext.Size = New System.Drawing.Size(40, 31)
         Me.btnNext.TabIndex = 3
         Me.btnNext.Text = "⏩"
         Me.btnNext.UseVisualStyleBackColor = True
@@ -122,32 +142,12 @@ Partial Class MainForm
         'btnPrev
         '
         Me.btnPrev.Anchor = System.Windows.Forms.AnchorStyles.Top
-        Me.btnPrev.Location = New System.Drawing.Point(400, 6)
+        Me.btnPrev.Location = New System.Drawing.Point(426, 7)
         Me.btnPrev.Name = "btnPrev"
-        Me.btnPrev.Size = New System.Drawing.Size(40, 32)
+        Me.btnPrev.Size = New System.Drawing.Size(40, 31)
         Me.btnPrev.TabIndex = 2
         Me.btnPrev.Text = "⏪"
         Me.btnPrev.UseVisualStyleBackColor = True
-        '
-        'btnPause
-        '
-        Me.btnPause.Anchor = System.Windows.Forms.AnchorStyles.Top
-        Me.btnPause.Location = New System.Drawing.Point(492, 7)
-        Me.btnPause.Name = "btnPause"
-        Me.btnPause.Size = New System.Drawing.Size(40, 32)
-        Me.btnPause.TabIndex = 1
-        Me.btnPause.Text = "| |"
-        Me.btnPause.UseVisualStyleBackColor = True
-        '
-        'btnPlay
-        '
-        Me.btnPlay.Anchor = System.Windows.Forms.AnchorStyles.Top
-        Me.btnPlay.Location = New System.Drawing.Point(446, 7)
-        Me.btnPlay.Name = "btnPlay"
-        Me.btnPlay.Size = New System.Drawing.Size(40, 32)
-        Me.btnPlay.TabIndex = 0
-        Me.btnPlay.Text = "▶️"
-        Me.btnPlay.UseVisualStyleBackColor = True
         '
         'FlowLayoutMusicPanel
         '
@@ -166,19 +166,6 @@ Partial Class MainForm
         Me.MySqlCommand1.Connection = Nothing
         Me.MySqlCommand1.EnableCaching = False
         Me.MySqlCommand1.Transaction = Nothing
-        '
-        'Timer1
-        '
-        '
-        'CurrentMusicDuration
-        '
-        Me.CurrentMusicDuration.Anchor = System.Windows.Forms.AnchorStyles.Right
-        Me.CurrentMusicDuration.AutoSize = True
-        Me.CurrentMusicDuration.Location = New System.Drawing.Point(681, 51)
-        Me.CurrentMusicDuration.Name = "CurrentMusicDuration"
-        Me.CurrentMusicDuration.Size = New System.Drawing.Size(44, 17)
-        Me.CurrentMusicDuration.TabIndex = 6
-        Me.CurrentMusicDuration.Text = "00:00"
         '
         'MainForm
         '
@@ -207,13 +194,12 @@ Partial Class MainForm
     Friend WithEvents playerControls As Panel
     Friend WithEvents searchBox As TextBox
     Friend WithEvents btnPrev As Button
-    Friend WithEvents btnPause As Button
-    Friend WithEvents btnPlay As Button
     Friend WithEvents btnNext As Button
     Friend WithEvents FlowLayoutMusicPanel As FlowLayoutPanel
-    Friend WithEvents ModernTrackBar1 As ModernTrackbar.ModernTrackBar
-    Friend WithEvents ModernTrackBar2 As ModernTrackbar.ModernTrackBar
     Friend WithEvents MySqlCommand1 As MySql.Data.MySqlClient.MySqlCommand
     Friend WithEvents Timer1 As Timer
     Friend WithEvents CurrentMusicDuration As Label
+    Friend WithEvents btnPlayPause As Button
+    Friend WithEvents ModernTrackBar2 As ModernTrackbar.ModernTrackbar_TheSecondOff.ModernTrackBar
+    Friend WithEvents VolumeTrackbar As ModernTrackbar.ModernTrackbar_TheSecondOff.VolumeTrackbar
 End Class

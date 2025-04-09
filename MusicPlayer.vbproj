@@ -189,6 +189,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MusicController.vb" />
+    <Compile Include="MusicControls.vb" />
     <Compile Include="MusicTime.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -207,6 +208,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Playlists.vb" />
+    <Compile Include="TooltipsApp.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Connection.resx">
