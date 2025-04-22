@@ -93,7 +93,7 @@ Partial Class MainForm
         Me.VolumeTrackbar.Size = New System.Drawing.Size(135, 31)
         Me.VolumeTrackbar.TabIndex = 10
         Me.VolumeTrackbar.Text = "VolumeTrackbar1"
-        Me.VolumeTrackbar.Value = 50
+        Me.VolumeTrackbar.Value = 20
         '
         'ModernTrackBar2
         '

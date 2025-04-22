@@ -13,11 +13,19 @@ Public Class MainForm
     Private tooltipsApp As TooltipsApp
     Private currentUserID As Integer ' ID de l'utilisateur récupéré du fichier JSON
     Private offlineMode As Boolean = False
-    Private connectionString As String = "Server=srv1049.hstgr.io;Database=u842356047_musicplayerdb;User Id=u842356047_gregcreeper95;Password=Minecraft0711@@@!!!;"
+    Private connectionString As String = ""
 
     Public Sub New()
         Debug.WriteLine("Initialisation de MainForm...")
         InitializeComponent()
+
+        ' Initialisation asynchrone après chargement de l'UI
+        Task.Run(Async Function()
+                     connectionString = Await LoadConnectionStringAsync()
+                     Debug.WriteLine("Chaîne de connexion chargée : " & connectionString)
+                 End Function)
+
+
         Me.Text = "Music Player"
         Me.StartPosition = FormStartPosition.CenterScreen
 
@@ -33,7 +41,7 @@ Public Class MainForm
         ' Correction ici, en s'assurant de passer VolumeTrackbar
         audioVolumeControls = New AudioVolumeControls(musicController.GetWaveOut(), VolumeTrackbar)
 
-        ' 👇 Ajout pour initialiser le tooltip et volume au démarrage
+        ' Ajout pour initialiser le tooltip et volume au démarrage
         audioVolumeControls.UpdateTooltip()
 
         tooltipsApp = New TooltipsApp()
@@ -146,6 +154,13 @@ Public Class MainForm
 
     ' Charger les résultats de recherche dans le FlowLayoutPanel
     Private Sub LoadSearchResults(searchQuery As String)
+
+        If String.IsNullOrWhiteSpace(connectionString) Then
+            MessageBox.Show("La chaîne de connexion n'est pas encore prête.")
+            Return
+        End If
+
+
         FlowLayoutMusicPanel.Controls.Clear() ' Vide le FlowLayoutPanel avant de le remplir
 
         Try
@@ -188,19 +203,46 @@ Public Class MainForm
         End Try
     End Sub
 
-    Private Sub MusicItem_Click(sender As Object, e As EventArgs)
+    Private Async Sub MusicItem_Click(sender As Object, e As EventArgs)
         Dim clickedControl As Control = CType(sender, Control)
         If clickedControl.Tag IsNot Nothing Then
             Dim songName As String = clickedControl.Tag.ToString() ' Récupère le nom de la chanson
             Debug.WriteLine("Lecture de la chanson sélectionnée: " & songName)
             musicController.PlaySong(songName) ' Appelle la fonction de lecture
 
-            ' Afficher la durée de la musique sélectionnée
+            ' Afficher la durée de la musique sélectionnée (de manière asynchrone)
             Dim musicTime As New MusicTime()
-            Dim duration As String = musicTime.GetMusicDuration(songName)
+            Dim duration As String = Await musicTime.GetMusicDuration(songName)
             CurrentMusicDuration.Text = duration
         Else
             Debug.WriteLine("Le contrôle cliqué n'a pas de Tag défini.")
         End If
     End Sub
+
+
+    Private Async Function LoadConnectionStringAsync() As Task(Of String)
+        Try
+            Using client As New HttpClient()
+                Dim values = New Dictionary(Of String, String) From {{"action", "getConnection"}}
+                Dim content = New FormUrlEncodedContent(values)
+
+                Dim response = Await client.PostAsync("https://musicplayer.creepergreg951.eu/connection.php", content)
+                response.EnsureSuccessStatusCode()
+
+                Dim responseString As String = Await response.Content.ReadAsStringAsync()
+                Dim json = JObject.Parse(responseString)
+
+                Dim server = json("servername").ToString()
+                Dim dbname = json("dbname").ToString()
+                Dim user = json("dbusername").ToString()
+                Dim pass = json("dbpassword").ToString()
+
+                Return $"Server={server};Database={dbname};User Id={user};Password={pass};"
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Erreur lors du chargement de la chaîne de connexion : " & ex.Message)
+            Return ""
+        End Try
+    End Function
+
 End Class

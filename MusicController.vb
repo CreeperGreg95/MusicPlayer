@@ -2,6 +2,8 @@
 Imports System.Speech.Synthesis
 Imports MySql.Data.MySqlClient
 Imports System.IO
+Imports System.Net.Http
+Imports Newtonsoft.Json.Linq
 
 Public Class MusicController
     Private waveOut As WaveOutEvent
@@ -9,7 +11,7 @@ Public Class MusicController
     Private currentStream As Stream
     Private karaokeSynth As SpeechSynthesizer
     Private volumeController As AudioVolumeControls
-    Private connectionString As String = "Server=srv1049.hstgr.io;Database=u842356047_musicplayerdb;User Id=u842356047_gregcreeper95;Password=Minecraft0711@@@!!!;"
+    Private connectionString As String
     Private currentUserID As Integer
 
     Public Sub New(userID As Integer, volumeControl As ModernTrackbar.ModernTrackbar_TheSecondOff.VolumeTrackbar)
@@ -17,6 +19,47 @@ Public Class MusicController
         karaokeSynth = New SpeechSynthesizer()
         volumeController = New AudioVolumeControls(waveOut, volumeControl)
         currentUserID = userID
+
+        ' Charger la chaîne de connexion depuis le fichier PHP
+        LoadConnectionStringAsync()
+    End Sub
+
+    ' Méthode asynchrone pour récupérer la chaîne de connexion depuis un fichier PHP
+    Private Async Sub LoadConnectionStringAsync()
+        Try
+            Dim client As New HttpClient()
+
+            ' Préparer la requête POST avec l'action appropriée
+            Dim content As New FormUrlEncodedContent(New Dictionary(Of String, String) From {
+                {"action", "getConnection"}
+            })
+
+            ' Envoyer la requête POST au fichier PHP
+            Dim response As HttpResponseMessage = Await client.PostAsync("https://musicplayer.creepergreg951.eu/musics_datastore/connection/connection.php", content)
+
+            If response.IsSuccessStatusCode Then
+                ' Lire la réponse JSON
+                Dim json As String = Await response.Content.ReadAsStringAsync()
+
+                ' Analyser le JSON
+                Dim config As JObject = JObject.Parse(json)
+
+                ' Construire la chaîne de connexion
+                connectionString = String.Format("Server={0};Database={1};User Id={2};Password={3};",
+                                                 config("servername").ToString(),
+                                                 config("dbname").ToString(),
+                                                 config("dbusername").ToString(),
+                                                 config("dbpassword").ToString())
+
+                Debug.WriteLine("Chaîne de connexion chargée : " & connectionString)
+            Else
+                Debug.WriteLine("Erreur lors de la récupération de la configuration de la base de données.")
+                MessageBox.Show("Erreur lors de la récupération des informations de connexion.")
+            End If
+        Catch ex As Exception
+            Debug.WriteLine("Erreur lors de la récupération de la configuration : " & ex.Message)
+            MessageBox.Show("Erreur lors de la récupération des informations de connexion : " & ex.Message)
+        End Try
     End Sub
 
     Public Function GetWaveOut() As WaveOutEvent
@@ -26,6 +69,12 @@ Public Class MusicController
     Public Function GetMusicLink(songName As String) As String
         Try
             Debug.WriteLine("Recherche du lien de la chanson: " & songName)
+
+            If String.IsNullOrEmpty(connectionString) Then
+                MessageBox.Show("La chaîne de connexion n'est pas encore chargée.")
+                Return String.Empty
+            End If
+
             Using conn As New MySqlConnection(connectionString)
                 conn.Open()
                 Dim query As String = "SELECT MusicLink FROM Musics WHERE MusicName = @MusicName"
@@ -86,6 +135,11 @@ Public Class MusicController
 
     Private Sub UpdateListenCounters(songName As String)
         Try
+            If String.IsNullOrEmpty(connectionString) Then
+                MessageBox.Show("La chaîne de connexion n'est pas encore chargée.")
+                Return
+            End If
+
             Using conn As New MySqlConnection(connectionString)
                 conn.Open()
 

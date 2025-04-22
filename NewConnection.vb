@@ -3,8 +3,9 @@ Imports System.Net.Http
 Imports System.Windows
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
+Imports System.Drawing
 
-Public Class Connection
+Public Class NewConnection
     Private userInfoFile As String = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MusicPlayer", "userinfo")
 
     ' Liste des valeurs interdites (modifiable)
@@ -42,21 +43,31 @@ Public Class Connection
         Return True
     End Function
 
-    Private Sub Connection_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ' Check if the user info file exists
+    Private Sub NewConnection_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Assurer que la fenêtre est à l'état normal et ne peut pas être redimensionnée
+        Me.AutoScaleMode = AutoScaleMode.Dpi
+        Me.WindowState = FormWindowState.Normal
+        Me.Size = New Drawing.Size(789, 485) ' Ajuste cette taille selon tes besoins
+        Me.StartPosition = FormStartPosition.CenterScreen ' Centre la fenêtre sur l'écran
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog ' Empêche le redimensionnement de la fenêtre
+
+        ' Vérifie si le fichier contenant les infos utilisateur existe
         If My.Computer.FileSystem.FileExists(userInfoFile) Then
-            ' Read user info from the file
+            ' Lis les infos utilisateur depuis le fichier
             Dim userInfo As String = My.Computer.FileSystem.ReadAllText(userInfoFile)
             Dim jsonUserInfo As JObject = JObject.Parse(userInfo)
 
-            ' Display user info or proceed to main form
-            ' MessageBox.Show("User Info: " & jsonUserInfo.ToString())
-
-            ' Redirect to MainForm
-            MainForm.Show()
+            ' Redirige vers MainForm si les infos existent
+            If Not MainForm.Visible Then
+                MainForm.Show()
+            End If
+            Me.Hide() ' Masque plutôt que de fermer la fenêtre de connexion après le succès
+        Else
+            ' Sinon, reste sur la page de connexion (ne fait rien ici)
+            Me.Show()
         End If
-        Me.Hide()
     End Sub
+
 
     Private Async Sub btnLogin_Click(sender As Object, e As EventArgs) Handles btnLogin.Click
         Dim username As String = txtUsername.Text
@@ -72,7 +83,12 @@ Public Class Connection
             Return
         End If
 
-        Dim url As String = "https://musicplayer.creepergreg951.eu/connection.php" ' URL de votre fichier PHP sur le serveur
+        ' Assurer que la fenêtre ne soit pas minimisée ou redimensionnée
+        If Me.WindowState = FormWindowState.Minimized Then
+            Me.WindowState = FormWindowState.Normal
+        End If
+
+        Dim url As String = "https://musicplayer.creepergreg951.eu/connection.php" ' URL de ton fichier PHP sur le serveur
 
         ' Créez un client HTTP pour envoyer les données au serveur
         Using client As New HttpClient()
@@ -111,10 +127,13 @@ Public Class Connection
                         ' Write user info to the file
                         My.Computer.FileSystem.WriteAllText(userInfoFile, userInfo.ToString(), False)
 
-                        ' Redirigez l'utilisateur vers la page principale
-                        Dim mainForm As New MainForm()
-                        mainForm.Show()
-                        Me.Hide() ' Optionally hide the current form
+                        ' Avant de fermer, vérifie si MainForm est déjà ouvert
+                        If Not MainForm.Visible Then
+                            MainForm.Show()
+                        End If
+
+                        ' Masquer la fenêtre de connexion plutôt que de la fermer
+                        Me.Hide()
                     Else
                         MessageBox.Show("Nom d'utilisateur ou mot de passe incorrect")
                     End If
@@ -143,7 +162,7 @@ Public Class Connection
             Return
         End If
 
-        Dim url As String = "https://musicplayer.creepergreg951.eu/connection.php" ' URL de votre fichier PHP sur le serveur
+        Dim url As String = "https://musicplayer.creepergreg951.eu/connection.php" ' URL de ton fichier PHP sur le serveur
 
         ' Créez un client HTTP pour envoyer les données au serveur
         Using client As New HttpClient()
